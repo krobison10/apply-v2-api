@@ -1,0 +1,32 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+myenv/
+venv/
+.env/
+
+# Logs and databases
+*.log
+*.sqlite
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Package directories (if you're using package managers like npm for front-end)
+node_modules/
+
+# Build artifacts
+build/
+dist/
