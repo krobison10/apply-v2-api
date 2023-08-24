@@ -1,4 +1,4 @@
-from .db import DBConnection
+from ..utils.db_connection import DBConnection
 
 class User:
     conn = DBConnection()
