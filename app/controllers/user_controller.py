@@ -1,5 +1,6 @@
 from app.models.user import User
 
+
 def get_user(uid: int) -> dict:
     user = User()
     user.uid = uid

@@ -4,7 +4,7 @@ __pycache__/
 
 # Virtual environments
 myenv/
-venv/
+.venv/
 .env
 
 # Logs and databases

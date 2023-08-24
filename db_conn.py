@@ -1,10 +1,10 @@
 import os
 import psycopg2.pool
 
-username = os.getenv('DB_USERNAME')
-password = os.getenv('DB_PASSWORD')
-host = os.getenv('DB_HOST')
-db_name = os.getenv('DB_NAME')
+username = os.getenv("DB_USERNAME")
+password = os.getenv("DB_PASSWORD")
+host = os.getenv("DB_HOST")
+db_name = os.getenv("DB_NAME")
 
 try:
     connection_pool = psycopg2.pool.ThreadedConnectionPool(
@@ -13,8 +13,8 @@ try:
         user=username,
         password=password,
         host=host,
-        database=db_name
+        database=db_name,
     )
 except:
-    print('Failed to connect to database, terminating...')
+    print("Failed to connect to database, terminating...")
     exit(3)
