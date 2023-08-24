@@ -1,10 +1,12 @@
 from app.models.user import User
 
-def get_user(user_id):
-    user = User().get_user_by_id(user_id)
-    return user
+def get_user(uid: int) -> dict:
+    user = User()
+    user.uid = uid
+    user_data = user.get_user_by_id()
+    return user_data
 
 
-def get_all_users():
+def get_all_users() -> dict:
     users = User().get_all_users()
     return users

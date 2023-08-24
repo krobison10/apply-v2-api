@@ -1,23 +1,22 @@
-from db_conn import connection
+from db_conn import connection_pool
 from psycopg2.extras import RealDictCursor
 
 class DBConnection:
-    conn = None
     
     def __init__(self):
         """Creates a new connection to the database""" 
-        self.conn = connection
-        self._init_connection()        
+        self.conn = connection_pool.getconn()
+        self._init_connection()
         
         
-    def fetch(self, sql, params = None):
+    def fetch(self, sql: str, params: dict = None):
         """Fetches one result"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(sql, params)
-            return cursor.fetch()
+            return cursor.fetchone()
         
 
-    def fetchAll(self, sql, params = None):
+    def fetchAll(self, sql: str, params: dict = None):
         """Fetches all results"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
             cursor.execute(sql, params)
@@ -25,17 +24,8 @@ class DBConnection:
     
     
     def _init_connection(self):
-        """Initializes the connection to the db"""
-        cur = self.conn.cursor()
-        cur.execute("SET search_path TO apply")
-        self.conn.commit()
-    
-    
-    def _close(self):
-        """Closes the connection to the database"""
-        self.conn.close()
+        pass
         
     
     def __del__(self):
-        """Destructor that calls _close()"""
-        self._close()
+        connection_pool.putconn(self.conn)

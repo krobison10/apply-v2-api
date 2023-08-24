@@ -1,6 +1,5 @@
 import os
-import psycopg2
-import psycopg2.extras
+import psycopg2.pool
 
 username = os.getenv('DB_USERNAME')
 password = os.getenv('DB_PASSWORD')
@@ -8,7 +7,9 @@ host = os.getenv('DB_HOST')
 db_name = os.getenv('DB_NAME')
 
 try:
-    connection = psycopg2.connect(
+    connection_pool = psycopg2.pool.ThreadedConnectionPool(
+        minconn=1,
+        maxconn=50,
         user=username,
         password=password,
         host=host,
