@@ -1,5 +1,4 @@
-from ..utils.db_connection import DBConnection
-
+from ..config import *
 
 class User:
     conn = None
@@ -13,7 +12,7 @@ class User:
         if uid:
             self.uid = uid
 
-    def get_user_by_id(self) -> dict:
+    def get_by_id(self) -> dict:
         sql = """
         SELECT *
         FROM users u 
@@ -24,6 +23,6 @@ class User:
 
         return self.conn.fetch(sql, params)
 
-    def get_all_users(self) -> dict:
+    def get_all(self) -> dict:
         sql = "SELECT * FROM users"
         return self.conn.fetchAll(sql=sql)
