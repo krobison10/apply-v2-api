@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 # blueprints
 from .services.routes import user_routes
@@ -9,6 +10,10 @@ from .services.routes import server_routes
 
 def create_app():
     app = Flask(__name__)
+    
+    app.wsgi_app = ProxyFix(
+    app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+    )
     
     app.secret_key = os.getenv("SECRET_KEY")
     

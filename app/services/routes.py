@@ -32,6 +32,7 @@ def status():
 @auth_routes.route("/login", methods=["GET"])
 def login():
     if not request.args.get('uid'):
+        JSONError.status_code = 422
         JSONError.throw_json_error("Missing uid")
     uid = int(request.args.get('uid'))
     return JSON.json_response(auth.login(uid))

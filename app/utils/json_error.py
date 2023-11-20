@@ -5,7 +5,7 @@ class JSONError:
     Utility class for handling JSON-based error responses.
     """
     
-    status_code = 400
+    status_code = 422
 
     # Predefined error types mapped to HTTP status codes.
     ERROR_TYPES = {
