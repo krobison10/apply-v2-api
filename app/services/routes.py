@@ -1,6 +1,6 @@
 # libraries
 import config
-from flask import Blueprint, request
+from flask import Blueprint
 
 # internal classes
 from ..config import *
@@ -84,6 +84,17 @@ def get_applications_route():
 
 
 # region: Interview routes
+
+
+@interview_routes.route("/interviews", methods=["GET"])
+def get_applications_route():
+    iid = request.args.get("iid")
+    if iid:
+        res = interview_controller.get(iid)
+    else:
+        res = interview_controller.get_all()
+
+    return JSON.json_response(res)
 
 
 # endregion

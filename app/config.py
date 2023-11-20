@@ -16,3 +16,4 @@ from .models.interview import Interview
 import app.controllers.auth_controller as auth_controller
 import app.controllers.user_controller as user_controller
 import app.controllers.application_controller as application_controller
+import app.controllers.interview_controller as interview_controller
