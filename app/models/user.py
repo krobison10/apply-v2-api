@@ -1,5 +1,6 @@
 from ..config import *
 
+
 class User:
     conn = None
 

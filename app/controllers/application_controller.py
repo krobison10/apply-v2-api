@@ -1,9 +1,10 @@
 from ..config import *
 
+
 def get(aid: int) -> dict:
     Access.check_API_access()
     application = Application()
-    application.uid = session['valid_uid']
+    application.uid = session["valid_uid"]
     app_data = application.get(aid)
     if not app_data:
         JSONError.status_code = 404
@@ -14,6 +15,6 @@ def get(aid: int) -> dict:
 def get_all() -> dict:
     Access.check_API_access()
     applications = Application()
-    applications.uid = session['valid_uid']
+    applications.uid = session["valid_uid"]
     application_results = applications.get_all()
     return application_results

@@ -1,5 +1,6 @@
 from ..config import *
 
+
 def get(uid: int) -> dict:
     Access.check_API_access()
     user = User()
