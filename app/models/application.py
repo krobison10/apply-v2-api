@@ -30,14 +30,20 @@ class Application:
     def __init__(self, aid=None):
         self.conn = DBConnection()
 
-    def get(self, aid=None):
-        sql = """
+    def get(self, aid=None, expand: bool = False):
+        extra_select = ""
+        if expand:
+            extra_select = """
+            LEFT JOIN postings p
+                ON a.pid = p.pid
+            LEFT JOIN companies c
+                ON c.cid = p.cid
+            """
+
+        sql = f"""
         SELECT *
         FROM applications a 
-        LEFT JOIN postings p
-            ON a.pid = p.pid
-        LEFT JOIN companies c
-            ON c.cid = p.cid
+        {extra_select}
         WHERE a.uid = %(uid)s 
             AND a.aid = %(aid)s
         LIMIT 1
@@ -47,14 +53,20 @@ class Application:
 
         return self.conn.fetch(sql, params)
 
-    def get_all(self):
-        sql = """
+    def get_all(self, expand: bool = False):
+        extra_select = ""
+        if expand:
+            extra_select = """
+            LEFT JOIN postings p
+                ON a.pid = p.pid
+            LEFT JOIN companies c
+                ON c.cid = p.cid
+            """
+
+        sql = f"""
         SELECT *
         FROM applications a 
-        LEFT JOIN postings p
-            ON a.pid = p.pid
-        LEFT JOIN companies c
-            ON c.cid = p.cid
+        {extra_select}
         WHERE a.uid = %(uid)s
         """
 

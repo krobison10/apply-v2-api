@@ -71,11 +71,14 @@ def get_all_users_route():
 
 @application_routes.route("/applications", methods=["GET"])
 def get_applications_route():
+    expand = request.args.get("expand")
+    expand = True if expand == "true" else False
+
     aid = request.args.get("aid")
     if aid:
-        res = application_controller.get(aid)
+        res = application_controller.get(aid, expand)
     else:
-        res = application_controller.get_all()
+        res = application_controller.get_all(expand)
 
     return JSON.json_response(res)
 
@@ -88,11 +91,14 @@ def get_applications_route():
 
 @interview_routes.route("/interviews", methods=["GET"])
 def get_applications_route():
+    expand = request.args.get("expand")
+    expand = True if expand == "true" else False
+
     iid = request.args.get("iid")
     if iid:
-        res = interview_controller.get(iid)
+        res = interview_controller.get(iid, expand)
     else:
-        res = interview_controller.get_all()
+        res = interview_controller.get_all(expand)
 
     return JSON.json_response(res)
 
