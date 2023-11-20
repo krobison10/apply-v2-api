@@ -6,8 +6,11 @@ def login(uid: int) -> dict:
         JSONError.status_code = 409
         return JSONError.throw_json_error(error="Already logged in")
 
+    user = User(uid)
+
     session["logged_in"] = True
-    session["valid_uid"] = uid
+    session["valid_uid"] = user.uid
+    session["valid_email"] = user.email
     return {"status": "ok", "message": "logged in successfully"}
 
 
