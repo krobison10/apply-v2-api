@@ -6,14 +6,16 @@ from flask import Blueprint, request
 from ..config import *
 
 # blueprints, make sure to register in __init__.py
-app_routes = Blueprint("app_routes", __name__)
+server_routes = Blueprint("server_routes", __name__)
 auth_routes = Blueprint("auth_routes", __name__)
 user_routes = Blueprint("user_routes", __name__)
+application_routes = Blueprint("app_routes", __name__)
+interview_routes = Blueprint("interview_routes", __name__)
 
 
-# region: App routes
+# region: Server routes
 
-@app_routes.route("/", methods=["GET"])
+@server_routes.route("/", methods=["GET"])
 def index():
     response = {"name": "Apply V2 API", "version": config.API_VERSION}
     return JSON.json_response(response)
@@ -52,5 +54,19 @@ def get_user_route(uid: int):
 @user_routes.route("/users", methods=["GET"])
 def get_all_users_route():
     return JSON.json_response(user.get_all())
+
+# endregion
+
+
+# region: Application routes
+
+
+
+# endregion
+
+
+# region: Interview routes
+
+
 
 # endregion

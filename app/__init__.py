@@ -4,7 +4,7 @@ from flask import Flask
 # blueprints
 from .services.routes import user_routes
 from .services.routes import auth_routes
-from .services.routes import app_routes
+from .services.routes import server_routes
 
 
 def create_app():
@@ -15,5 +15,5 @@ def create_app():
     # blueprints    
     app.register_blueprint(user_routes)
     app.register_blueprint(auth_routes)
-    app.register_blueprint(app_routes)
+    app.register_blueprint(server_routes)
     return app

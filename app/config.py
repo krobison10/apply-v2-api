@@ -6,6 +6,8 @@ from .utils.access import Access
 from .utils.json import JSON
 
 from .models.user import User
+from .models.application import Application
+from .models.interview import Interview
 
 import app.controllers.auth_controller as auth
 import app.controllers.user_controller as user
