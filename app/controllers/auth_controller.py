@@ -1,5 +1,4 @@
 from ..config import *
-from flask import session
 
 def login(uid: int) -> dict:
     if session.get("logged_in"):

@@ -1,6 +1,5 @@
 
 from ..config import *
-import datetime
 
 class Interview:
     conn: DBConnection = None

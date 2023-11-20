@@ -1,4 +1,3 @@
-from flask import session, request
 from ..config import *
 
 class Access:

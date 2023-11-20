@@ -1,5 +1,4 @@
 from ..config import *
-import datetime
 
 class Application:
     conn: DBConnection = None
@@ -30,11 +29,40 @@ class Application:
     
     def __init__(self, aid = None):
         self.conn = DBConnection()
-   
             
         
     def get(self, aid = None):
-        pass
+        sql = """
+        SELECT *
+        FROM applications a 
+        LEFT JOIN postings p
+            ON a.pid = p.pid
+        LEFT JOIN companies c
+            ON c.cid = p.cid
+        WHERE a.uid = %(uid)s 
+            AND a.aid = %(aid)s
+        LIMIT 1
+        """
+
+        params = {"uid": self.uid, "aid": aid}
+
+        return self.conn.fetch(sql, params)
+    
+    
+    def get_all(self):
+        sql = """
+        SELECT *
+        FROM applications a 
+        LEFT JOIN postings p
+            ON a.pid = p.pid
+        LEFT JOIN companies c
+            ON c.cid = p.cid
+        WHERE a.uid = %(uid)s
+        """
+
+        params = {"uid": self.uid}
+
+        return self.conn.fetchAll(sql, params)
         
         
     def update_edit_timestamp(self):
