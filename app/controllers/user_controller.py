@@ -13,8 +13,5 @@ def get(uid: int) -> dict:
 def get_all() -> dict:
     Access.check_API_access()
     users = User().get_all()
-    response = {
-        "count": len(users),
-        "results": users
-    }
+    response = {"count": len(users), "results": users}
     return response
