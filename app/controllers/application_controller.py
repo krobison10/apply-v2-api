@@ -17,4 +17,8 @@ def get_all(expand: bool = False) -> dict:
     applications = Application()
     applications.uid = session["valid_uid"]
     application_results = applications.get_all(expand)
-    return application_results
+    response = {
+        "count": len(application_results),
+        "results": application_results
+    }
+    return response

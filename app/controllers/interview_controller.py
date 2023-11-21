@@ -17,4 +17,8 @@ def get_all(expand: bool = False) -> dict:
     interview = Interview()
     interview.uid = session["valid_uid"]
     interview_results = interview.get_all(expand)
-    return interview_results
+    response = {
+        "count": len(interview_results),
+        "results": interview_results
+    }
+    return response

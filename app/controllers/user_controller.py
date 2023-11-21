@@ -9,7 +9,12 @@ def get(uid: int) -> dict:
     return user_data
 
 
+# TODO: Remove this option maybe
 def get_all() -> dict:
     Access.check_API_access()
     users = User().get_all()
-    return users
+    response = {
+        "count": len(users),
+        "results": users
+    }
+    return response
