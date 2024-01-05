@@ -21,21 +21,11 @@ class Interview:
         self.conn = DBConnection()
 
     def get(self, iid: int, expand: bool = False):
-        extra_select = ""
-        if expand:
-            extra_select = """
-            LEFT JOIN postings p
-                ON a.pid = p.pid
-            LEFT JOIN companies c
-                ON c.cid = p.cid
-            """
-
         sql = f"""
-        SELECT i.* {", a.*, p.*, c.* " if expand else ""}
+        SELECT i.* {", a.*" if expand else ""}
         FROM interviews i 
         LEFT JOIN applications a
             ON i.aid = a.aid
-        {extra_select}
         WHERE a.uid = %(uid)s 
             AND i.iid = %(iid)s
         LIMIT 1
@@ -46,21 +36,11 @@ class Interview:
         return self.conn.fetch(sql, params)
 
     def get_all(self, expand: bool = False):
-        extra_select = ""
-        if expand:
-            extra_select = """
-            LEFT JOIN postings p
-                ON a.pid = p.pid
-            LEFT JOIN companies c
-                ON c.cid = p.cid
-            """
-
         sql = f"""
-        SELECT i.* {", a.*, p.*, c.* " if expand else ""}
+        SELECT i.* {", a.*" if expand else ""}
         FROM interviews i 
         LEFT JOIN applications a
             ON i.aid = a.aid
-        {extra_select}
         WHERE a.uid = %(uid)s
         """
 
