@@ -2,7 +2,7 @@ from ..config import *
 
 
 class Application:
-    conn: DBConnection = None
+    db_conn: DBConnection = None
 
     aid: int = None
     uid: int = None
@@ -28,22 +28,12 @@ class Application:
     phone: str = None
 
     def __init__(self, aid=None):
-        self.conn = DBConnection()
+        self.db_conn = DBConnection()
 
-    def get(self, aid=None, expand: bool = False):
-        extra_select = ""
-        if expand:
-            extra_select = """
-            LEFT JOIN postings p
-                ON a.pid = p.pid
-            LEFT JOIN companies c
-                ON c.cid = p.cid
-            """
-
+    def get(self, aid=None):
         sql = f"""
         SELECT *
         FROM applications a 
-        {extra_select}
         WHERE a.uid = %(uid)s 
             AND a.aid = %(aid)s
         LIMIT 1
@@ -51,28 +41,18 @@ class Application:
 
         params = {"uid": self.uid, "aid": aid}
 
-        return self.conn.fetch(sql, params)
+        return self.db_conn.fetch(sql, params)
 
-    def get_all(self, expand: bool = False):
-        extra_select = ""
-        if expand:
-            extra_select = """
-            LEFT JOIN postings p
-                ON a.pid = p.pid
-            LEFT JOIN companies c
-                ON c.cid = p.cid
-            """
-
+    def get_all(self):
         sql = f"""
         SELECT *
         FROM applications a 
-        {extra_select}
         WHERE a.uid = %(uid)s
         """
 
         params = {"uid": self.uid}
 
-        return self.conn.fetchAll(sql, params)
+        return self.db_conn.fetchAll(sql, params)
 
     def update_edit_timestamp(self):
         pass

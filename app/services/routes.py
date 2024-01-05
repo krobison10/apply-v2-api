@@ -71,14 +71,12 @@ def get_all_users_route():
 
 @application_routes.route("/applications", methods=["GET"])
 def get_applications_route():
-    expand = request.args.get("expand")
-    expand = True if expand == "true" else False
-
     aid = request.args.get("aid")
+    
     if aid:
-        res = application_controller.get(aid, expand)
+        res = application_controller.get(aid)
     else:
-        res = application_controller.get_all(expand)
+        res = application_controller.get_all()
 
     return JSON.json_response(res)
 
