@@ -29,3 +29,26 @@ class Validate:
         if len(str) > length:
             JSONError.throw_json_error(f"Max length for {name} is {length} characters")
         return str
+
+    @staticmethod
+    def required_fields(object: object, dependencies: list):
+        """
+        Verifies that specified fields are defined and truthy on the given object.
+
+        Parameters:
+            object (Any): The object to check attributes for.
+            dependencies (list[str]): A list of attribute names to verify on the object.
+
+        Raises:
+            ValueError: If any specified attribute is not defined or is falsy.
+        """
+
+        for dependency in dependencies:
+            if not hasattr(object, dependency) or not getattr(object, dependency):
+                raise ValueError(f"Field '{dependency}' needs to be defined")
+
+    @staticmethod
+    def not_null(dependencies: list):
+        for dependency in dependencies:
+            if not dependency:
+                raise ValueError(f"Field is null")

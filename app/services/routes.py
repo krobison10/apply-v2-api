@@ -55,12 +55,12 @@ def logout():
 
 @user_routes.route("/user/<int:uid>", methods=["GET"])
 def get_user_route(uid: int):
-    return JSON.json_response(user_controller.get(uid=uid))
+    return JSON.json_response(user_controller.get(uid=uid)), 200
 
 
 @user_routes.route("/users", methods=["GET"])
 def get_all_users_route():
-    return JSON.json_response(user_controller.get_all())
+    return JSON.json_response(user_controller.get_all()), 200
 
 
 # endregion
@@ -69,16 +69,31 @@ def get_all_users_route():
 # region: Application routes
 
 
-@application_routes.route("/applications", methods=["GET"])
-def get_applications_route():
-    aid = request.args.get("aid")
-    
-    if aid:
-        res = application_controller.get(aid)
-    else:
-        res = application_controller.get_all()
+@application_routes.route("/applications", methods=["GET", "POST", "PUT", "DELETE"])
+def applications_routes():
+    if request.method == "GET":
+        aid = request.args.get("aid")
 
-    return JSON.json_response(res)
+        if aid:
+            res = application_controller.get(aid)
+        else:
+            res = application_controller.get_all()
+
+        return JSON.json_response(res), 200
+
+    if request.method == "POST":
+        result = application_controller.create(request.json)
+        return JSON.json_response(result), 201
+
+    if request.method == "PUT":
+        aid = request.args.get("aid")
+        result = application_controller.edit(aid, request.json)
+        return JSON.json_response(result), 200
+
+    if request.method == "DELETE":
+        aid = request.args.get("aid")
+        result = application_controller.delete(aid)
+        return JSON.json_response(result), 200
 
 
 # endregion

@@ -1,12 +1,12 @@
 from db_conn import connection_pool
 from psycopg2.extras import RealDictCursor
+from ..config import *
 
 
 class DBConnection:
     def __init__(self):
         """Creates a new connection to the database"""
         self.conn = connection_pool.getconn()
-        self._init_connection()
 
     def fetch(self, sql: str, params: dict = None):
         """Fetches one result"""
@@ -20,8 +20,17 @@ class DBConnection:
             cursor.execute(sql, params)
             return cursor.fetchall()
 
-    def _init_connection(self):
-        pass
+    def execute(self, sql: str, params: dict = None, commit: bool = True):
+        """Executes a query that makes an update"""
+        try:
+            with self.conn.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(sql, params)
+                if commit:
+                    self.conn.commit()
+
+        except Exception as e:
+            self.conn.rollback()
+            JSONError.throw_json_error(str(e), 500)
 
     def __del__(self):
         connection_pool.putconn(self.conn)
