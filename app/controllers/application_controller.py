@@ -27,6 +27,8 @@ def create(data: dict) -> dict:
     application = Application()
     application.uid = session["valid_uid"]
 
+    Validate.required_fields(data, Application.required_fields, code=422)
+
     invalid_fields = []
 
     for field in data:
@@ -63,9 +65,9 @@ def create(data: dict) -> dict:
         JSONError.status_code = 422
         JSONError.throw_json_error(error)
 
-    application.save()
+    aid = application.save()
 
-    response = {"success": True, "status": 201}
+    response = JSON.success(201, {"aid": aid})
     return response
 
 
@@ -111,7 +113,7 @@ def edit(aid: int, data: dict) -> dict:
 
     application.save()
 
-    response = {"success": True, "status": 200}
+    response = JSON.success(200)
     return response
 
 
@@ -121,7 +123,16 @@ def delete(aid: int) -> bool:
     application.uid = session["valid_uid"]
     application.aid = aid
 
-    application.delete()
+    app_data = application.get()
+    if not app_data:
+        JSONError.status_code = 404
+        JSONError.throw_json_error("Application not found")
 
-    response = {"success": True, "status": 200}
+    rows_affected = application.delete()
+
+    if not rows_affected:
+        JSONError.status_code = 500
+        JSONError.throw_json_error("Failed to delete application")
+
+    response = JSON.success(200)
     return response

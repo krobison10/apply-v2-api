@@ -6,20 +6,20 @@ class JSONError:
     Utility class for handling JSON-based error responses.
     """
 
-    status_code = 422
+    status_code = 500
 
     # Predefined error types mapped to HTTP status codes.
     ERROR_TYPES = {
-        400: "bad_request",
-        401: "not_authorized",
-        403: "forbidden",
-        404: "not_found",
-        405: "method_not_allowed",
-        409: "conflict",
-        415: "invalid_content_type",
-        422: "invalid_request",
-        429: "rate_limit_exceeded",
-        500: "internal_server_error",
+        400: "Bad Request",
+        401: "Not Authorized",
+        403: "Forbidden",
+        404: "Not Found",
+        405: "Method Not Allowed",
+        409: "Conflict",
+        415: "Invalid Content Type",
+        422: "Invalid Request",
+        429: "Rate Limit Exceeded",
+        500: "Internal Server Error",
     }
 
     @staticmethod
@@ -35,14 +35,11 @@ class JSONError:
         - None: Aborts the request with a JSON response.
         """
         response = {
-            "error": {
-                "message": error
-                if error
-                else JSONError.ERROR_TYPES[JSONError.status_code],
-                "type": "warn" if type is None else type,
-            }
+            "code": JSONError.status_code,
+            "error": JSONError.ERROR_TYPES[JSONError.status_code],
+            "message": (error if error else "An error occurred"),
         }
-        message = response["error"]["message"]
+        message = response["message"]
         response = jsonify(response)
         abort(JSONError.status_code, description=message)
 

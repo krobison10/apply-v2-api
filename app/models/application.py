@@ -2,33 +2,7 @@ from ..config import *
 
 
 class Application:
-    db_conn: DBConnection = None
-
-    fields_populated: bool = False  # whether data has been loaded in from db
-
-    aid: int = None
-    uid: int = None
-
-    status: int = None
-    resume: str = None
-    cover_letter: str = None
-
-    title: str = None
-    description: str = None
-    date: datetime = None
-    field: str = None
-    position: str = None
-    wage: float = None
-    job_start: datetime = None
-
-    company: str = None
-    industry: str = None
-    website: str = None
-    phone: str = None
-
-    created_at: datetime = None
-    updated_at: datetime = None
-
+    # Fields that are user editable
     editable: list = [
         "status",
         "resume",
@@ -46,6 +20,9 @@ class Application:
         "phone",
     ]
 
+    # Fields that are required for this resources
+    required_fields = ["status", "title", "company"]
+
     def __init__(self, uid=None, aid=None):
         """
         Constructs all the necessary attributes for the application object.
@@ -54,7 +31,33 @@ class Application:
             aid (int, optional): Auto-incrementing primary key of the application. Defaults to None.
         """
 
-        self.db_conn = DBConnection()
+        self.db_conn: DBConnection = DBConnection()
+
+        self.fields_populated: bool = False  # whether data has been loaded in from db
+
+        self.aid: int = None
+        self.uid: int = None
+
+        self.status: int = None
+        self.resume: str = None
+        self.cover_letter: str = None
+
+        self.title: str = None
+        self.description: str = None
+        self.date: datetime = None
+        self.field: str = None
+        self.position: str = None
+        self.wage: float = None
+        self.job_start: datetime = None
+
+        self.company: str = None
+        self.industry: str = None
+        self.website: str = None
+        self.phone: str = None
+
+        self.created_at: datetime = None
+        self.updated_at: datetime = None
+
         if aid and uid:
             self.aid = aid
             self.uid = uid
@@ -97,7 +100,8 @@ class Application:
         """
 
         for field in data:
-            setattr(self, field, data[field])
+            if hasattr(self, field):
+                setattr(self, field, data[field])
 
     def get_all(self):
         """
@@ -192,8 +196,9 @@ class Application:
         }
 
         self.db_conn.execute(sql, params)
+        return self.db_conn.last_id
 
-    def delete(self):
+    def delete(self) -> int:
         """
         Deletes the application record from the database.
 
@@ -212,3 +217,4 @@ class Application:
         params = {"aid": self.aid, "uid": self.uid}
 
         self.db_conn.execute(sql, params)
+        return self.db_conn.rows_affected

@@ -15,5 +15,12 @@ def implode(elements, delimiter=""):
     return delimiter.join(map(str, elements))
 
 
+def safe_execute(function, *args, exception=Exception, default=None):
+    try:
+        return function(*args)
+    except exception:
+        return default
+
+
 class Helpers:
     pass

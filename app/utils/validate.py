@@ -31,7 +31,7 @@ class Validate:
         return str
 
     @staticmethod
-    def required_fields(object: object, dependencies: list):
+    def required_fields(data, dependencies: list, code: int = 500):
         """
         Verifies that specified fields are defined and truthy on the given object.
 
@@ -43,9 +43,31 @@ class Validate:
             ValueError: If any specified attribute is not defined or is falsy.
         """
 
-        for dependency in dependencies:
-            if not hasattr(object, dependency) or not getattr(object, dependency):
-                raise ValueError(f"Field '{dependency}' needs to be defined")
+        # Check if the input is a dictionary
+
+        if isinstance(data, dict):
+            for dependency in dependencies:
+                if dependency not in data or not data[dependency]:
+                    if code == 500:
+                        raise ValueError(
+                            f"Field '{dependency}' needs to be defined and truthy"
+                        )
+                    JSONError.status_code = code
+                    JSONError.throw_json_error(
+                        f"Field '{dependency}' needs to be defined and truthy"
+                    )
+        else:
+            # Assume the input is an object if not a dictionary
+            for dependency in dependencies:
+                if not hasattr(data, dependency) or not getattr(data, dependency):
+                    if code == 500:
+                        raise ValueError(
+                            f"Field '{dependency}' needs to be defined and truthy"
+                        )
+                    JSONError.status_code = code
+                    JSONError.throw_json_error(
+                        f"Field '{dependency}' needs to be defined and truthy"
+                    )
 
     @staticmethod
     def not_null(dependencies: list):
