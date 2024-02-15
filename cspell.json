@@ -1,0 +1,24 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "ignorePaths": [
+        ".venv/**"
+    ],
+    "allowCompoundWords": true,
+    "dictionaryDefinitions": [
+        {
+            "name": "customDictionary",
+            "path": "./custom-dictionary.txt"
+        }
+    ],
+    "dictionaries": [
+        "python",
+        "flask"
+    ],
+    "ignoreRegExpList": [
+        "/\\b[A-Z]{2,}\\b/g" // Ignore all uppercase words with 2 or more characters
+    ],
+    "words": [
+        "urandom"
+    ]
+}

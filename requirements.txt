@@ -1,8 +1,13 @@
 black==23.7.0
 blinker==1.6.2
 blueprint==3.4.2
+cachelib==0.10.2
 click==8.1.7
+dnspython==2.5.0
+email-validator==2.1.0.post1
 Flask==2.3.3
+Flask-Session==0.5.0
+idna==3.6
 itsdangerous==2.1.2
 Jinja2==3.1.2
 jsonify==0.5
@@ -14,5 +19,6 @@ platformdirs==3.10.0
 psycopg2==2.9.7
 psycopg2-binary==2.9.7
 python-dotenv==1.0.0
+redis==5.0.0
 tomli==2.0.1
 Werkzeug==2.3.7

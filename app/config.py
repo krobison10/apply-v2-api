@@ -14,6 +14,7 @@ from .utils.validate import Validate
 from .models.user import User
 from .models.application import Application
 from .models.interview import Interview
+from .models.credentials import Credentials
 
 import app.controllers.auth_controller as auth_controller
 import app.controllers.user_controller as user_controller

@@ -2,21 +2,20 @@ from ..config import *
 
 
 class User:
-    conn = None
-
-    # User fields
-    uid: int
-
-    email: str
-    firstname: str
-    lastname: str
-    phone: str
-    username: str
-    created_at: datetime
-    updated_at: datetime
 
     def __init__(self, uid: int = None):
         self.conn = DBConnection()
+
+        # User fields
+        self.uid: int = None
+
+        self.email: str = None
+        self.firstname: str = None
+        self.lastname: str = None
+        self.phone: str = None
+        self.username: str = None
+        self.created_at: datetime = None
+        self.updated_at: datetime = None
 
         if uid:
             self.uid = uid
@@ -44,6 +43,44 @@ class User:
         params = {"uid": self.uid}
 
         return self.conn.fetch(sql, params)
+
+    def get_by_email(self, with_credentials=False) -> dict:
+
+        sql = f"""
+        SELECT u.* {", c.hashed_pass, c.salt" if with_credentials else ""}
+        FROM users u 
+        {"JOIN credentials c ON c.uid = u.uid" if with_credentials else ""}
+        WHERE u.email = %(email)s
+        """
+
+        params = {"email": self.email}
+
+        return self.conn.fetch(sql, params)
+
+    def create(self) -> int:
+        sql = """
+        INSERT INTO users (email, firstname, lastname, phone, username)
+        VALUES (%(email)s, %(firstname)s, %(lastname)s, %(phone)s, %(username)s)
+        RETURNING uid
+        """
+
+        Validate.required_fields(self, ["email"])
+
+        params = {
+            "email": self.email,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "phone": self.phone,
+            "username": self.username,
+        }
+
+        self.conn.execute(sql, params)
+
+        if self.conn.rows_affected < 1:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("User creation failed")
+
+        return self.conn.rows_affected
 
     def get_all(self) -> dict:
         sql = "SELECT * FROM users"

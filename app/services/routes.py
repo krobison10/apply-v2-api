@@ -33,16 +33,15 @@ def status():
 # region: Auth routes
 
 
-@auth_routes.route("/login", methods=["GET"])
+@auth_routes.route("/login", methods=["POST"])
 def login():
-    if not request.args.get("uid"):
-        JSONError.status_code = 422
-        JSONError.throw_json_error("Missing uid")
-    uid = int(request.args.get("uid"))
-    return JSON.json_response(auth_controller.login(uid))
+    data = request.json
+    Validate.required_fields(data, ["email", "password"], code=422)
+    result = auth_controller.login(data["email"], data["password"])
+    return JSON.json_response(result)
 
 
-@auth_routes.route("/logout", methods=["GET"])
+@auth_routes.route("/logout", methods=["GET", "POST"])
 def logout():
     return JSON.json_response(auth_controller.logout())
 
