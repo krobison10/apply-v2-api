@@ -42,7 +42,9 @@ class User:
 
         params = {"uid": self.uid}
 
-        return self.conn.fetch(sql, params)
+        result = self.conn.fetch(sql, params)
+        self.set(result)
+        return result
 
     def get_by_email(self, with_credentials=False) -> dict:
 
@@ -55,7 +57,14 @@ class User:
 
         params = {"email": self.email}
 
-        return self.conn.fetch(sql, params)
+        result = self.conn.fetch(sql, params)
+        self.set(result)
+        return result
+
+    def set(self, data: dict):
+        for field in data:
+            if hasattr(self, field):
+                setattr(self, field, data[field])
 
     def create(self) -> int:
         sql = """

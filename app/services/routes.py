@@ -33,9 +33,14 @@ def status():
 # region: Auth routes
 
 
-@auth_routes.route("/login", methods=["POST"])
+@auth_routes.route("/login", methods=["GET", "POST"])
 def login():
-    data = request.json
+    if request.method == "GET":  # debug
+        data = {}
+        data["email"] = "Abby01@uw.edu"
+        data["password"] = "password"
+    else:
+        data = request.json
     Validate.required_fields(data, ["email", "password"], code=422)
     result = auth_controller.login(data["email"], data["password"])
     return JSON.json_response(result)
