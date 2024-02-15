@@ -31,7 +31,8 @@ class Credentials:
         hashed_pass = credentials["hashed_pass"]
         salt = credentials["salt"]
         if not Credentials.verify_password(hashed_pass, self.supplied_password, salt):
-            JSONError.throw_json_error("Invalid email or password", 401)
+            JSONError.status_code = 401
+            JSONError.throw_json_error("Invalid email or password")
 
     def create(self) -> int:
         hashed_pass, salt = Credentials.create_hash(self.supplied_password)
