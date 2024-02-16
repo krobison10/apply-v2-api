@@ -1,11 +1,14 @@
 from ..config import *
 
 
-def get(uid: int) -> dict:
+def get() -> dict:
     Access.check_API_access()
     user = User()
-    user.uid = uid
+    user.uid = session["valid_uid"]
     user_data = user.get_by_id()
+    if not user_data:
+        JSONError.status_code = 404
+        JSONError.throw_json_error("User not found")
     return user_data
 
 

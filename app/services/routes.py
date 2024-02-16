@@ -57,9 +57,9 @@ def logout():
 # region: User routes
 
 
-@user_routes.route("/user/<int:uid>", methods=["GET"])
-def get_user_route(uid: int):
-    return JSON.json_response(user_controller.get(uid=uid)), 200
+@user_routes.route("/user", methods=["GET"])
+def get_user_route():
+    return JSON.json_response(user_controller.get()), 200
 
 
 @user_routes.route("/users", methods=["GET"])
