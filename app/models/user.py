@@ -58,7 +58,8 @@ class User:
         params = {"email": self.email}
 
         result = self.conn.fetch(sql, params)
-        self.set(result)
+        if result:
+            self.set(result)
         return result
 
     def set(self, data: dict):
@@ -83,12 +84,13 @@ class User:
             "username": self.username,
         }
 
-        self.conn.execute(sql, params)
+        self.conn.execute(sql, params, key_name="uid")
 
         if self.conn.rows_affected < 1:
             JSONError.status_code = 500
             JSONError.throw_json_error("User creation failed")
 
+        self.uid = self.conn.last_id
         return self.conn.rows_affected
 
     def get_all(self) -> dict:

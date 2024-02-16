@@ -24,7 +24,7 @@ class Credentials:
 
     def verify_user(self):
         credentials = self.get_credentials()
-        if not credentials:
+        if not credentials:  # TODO: find a better solution for this
             # Credentials not found, create some
             self.create()
             return
