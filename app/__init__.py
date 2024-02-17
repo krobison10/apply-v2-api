@@ -1,5 +1,6 @@
 from werkzeug.exceptions import HTTPException
 import os
+from dotenv import load_dotenv, find_dotenv
 from flask import Flask, jsonify
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -10,6 +11,7 @@ from .services.routes import auth_routes
 from .services.routes import application_routes
 from .services.routes import interview_routes
 
+load_dotenv(find_dotenv())
 
 error_codes = [
     400,
