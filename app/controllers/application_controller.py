@@ -4,7 +4,7 @@ from ..config import *
 def get(aid: int) -> dict:
     Access.check_API_access()
     application = Application()
-    application.uid = session["valid_uid"]
+    application.uid = session.get("valid_uid")
     application.aid = aid
     app_data = application.get()
     if not app_data:
@@ -16,45 +16,40 @@ def get(aid: int) -> dict:
 def get_all() -> dict:
     Access.check_API_access()
     applications = Application()
-    applications.uid = session["valid_uid"]
+    applications.uid = session.get("valid_uid")
     application_results = applications.get_all()
     response = {"count": len(application_results), "results": application_results}
     return response
 
 
-def create(data: dict) -> dict:
-    Access.check_API_access()
-    application = Application()
-    application.uid = session["valid_uid"]
-
-    Validate.required_fields(data, Application.required_fields, code=422)
-
+def validate_application_fields(application, data):
     invalid_fields = []
 
     for field in data:
-        if field in ["uid", "wage"]:
+        if field in ["uid", "aid", "position_wage", "priority"]:
             Validate.number(data[field], field)
             setattr(application, field, int(data[field]))
-        elif field in ["date", "job_start"]:
+        elif field in ["application_date", "job_start"]:
             # TODO: validation function for date
             try:
                 setattr(application, field, datetime.strptime(data[field], "%Y-%m-%d"))
             except:
-                JSONError.status_code = 422
-                JSONError.throw_json_error(f"Field '{field}' must be a datetime")
+                invalid_fields.append(field)
 
         elif field in [
             "status",
-            "resume",
-            "cover_letter",
-            "title",
-            "description",
-            "field",
-            "position",
-            "company",
-            "industry",
-            "website",
-            "phone",
+            "resume_url",
+            "cover_letter_url",
+            "position_title",
+            "notes",
+            "position_level",
+            "company_name",
+            "company_industry",
+            "company_website",
+            "posting_url",
+            "job_location",
+            "posting_source",
+            "priority",
         ]:
             setattr(application, field, str(data[field]))
         else:
@@ -64,6 +59,16 @@ def create(data: dict) -> dict:
         error = "Invalid fields supplied: " + implode(invalid_fields, ", ")
         JSONError.status_code = 422
         JSONError.throw_json_error(error)
+
+
+def create(data: dict) -> dict:
+    Access.check_API_access()
+    application = Application()
+    application.uid = session.get("valid_uid")
+
+    Validate.required_fields(data, Application.required_fields, code=422)
+
+    validate_application_fields(application, data)
 
     aid = application.save()
 
@@ -73,43 +78,9 @@ def create(data: dict) -> dict:
 
 def edit(aid: int, data: dict) -> dict:
     Access.check_API_access()
-    application = Application(session["valid_uid"], aid)
+    application = Application(session.get("valid_uid"), aid)
 
-    invalid_fields = []
-
-    for field in data:
-        if field in ["uid", "wage"]:
-            Validate.number(data[field], field)
-            setattr(application, field, int(data[field]))
-        elif field in ["date", "job_start"]:
-            # TODO: validation function for date
-            try:
-                setattr(application, field, datetime.strptime(data[field], "%Y-%m-%d"))
-            except:
-                JSONError.status_code = 422
-                JSONError.throw_json_error(f"Field '{field}' must be a datetime")
-
-        elif field in [
-            "status",
-            "resume",
-            "cover_letter",
-            "title",
-            "description",
-            "field",
-            "position",
-            "company",
-            "industry",
-            "website",
-            "phone",
-        ]:
-            setattr(application, field, str(data[field]))
-        else:
-            invalid_fields.append(field)
-
-    if invalid_fields:
-        error = "Invalid fields supplied: " + implode(invalid_fields, ", ")
-        JSONError.status_code = 422
-        JSONError.throw_json_error(error)
+    validate_application_fields(application, data)
 
     application.save()
 
@@ -120,7 +91,7 @@ def edit(aid: int, data: dict) -> dict:
 def delete(aid: int) -> bool:
     Access.check_API_access()
     application = Application()
-    application.uid = session["valid_uid"]
+    application.uid = session.get("valid_uid")
     application.aid = aid
 
     app_data = application.get()

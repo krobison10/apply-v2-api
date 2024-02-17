@@ -2,26 +2,11 @@ from ..config import *
 
 
 class Application:
-    # Fields that are user editable
-    editable: list = [
-        "status",
-        "resume",
-        "cover_letter",
-        "title",
-        "description",
-        "date",
-        "field",
-        "position",
-        "wage",
-        "job_start",
-        "company",
-        "industry",
-        "website",
-        "phone",
-    ]
+    # Fields that are not user editable
+    non_editable: list = ["aid", "uid", "created_at", "updated_at"]
 
     # Fields that are required for this resources
-    required_fields = ["status", "title", "company"]
+    required_fields = ["status", "position_title", "company_name"]
 
     def __init__(self, uid=None, aid=None):
         """
@@ -37,26 +22,24 @@ class Application:
 
         self.aid: int = None
         self.uid: int = None
-
         self.status: int = None
-        self.resume: str = None
-        self.cover_letter: str = None
-
-        self.title: str = None
-        self.description: str = None
-        self.date: datetime = None
-        self.field: str = None
-        self.position: str = None
-        self.wage: float = None
-        self.job_start: datetime = None
-
-        self.company: str = None
-        self.industry: str = None
-        self.website: str = None
-        self.phone: str = None
-
+        self.resume_url: str = None
+        self.cover_letter_url: str = None
+        self.position_title: str = None
+        self.notes: str = None
+        self.application_date: datetime = None
+        self.position_level: str = None
+        self.position_wage: int = None
+        self.company_name: str = None
+        self.company_industry: str = None
+        self.company_website: str = None
         self.created_at: datetime = None
         self.updated_at: datetime = None
+        self.posting_url: str = None
+        self.job_location: str = None
+        self.posting_source: str = None
+        self.job_start: datetime = None
+        self.priority: int = None
 
         if aid and uid:
             self.aid = aid
@@ -146,33 +129,40 @@ class Application:
                 SET 
                     uid = %(uid)s, 
                     status = %(status)s, 
-                    resume = %(resume)s, 
-                    cover_letter = %(cover_letter)s, 
-                    title = %(title)s, 
-                    description = %(description)s, 
-                    date = %(date)s, 
-                    field = %(field)s, 
-                    position = %(position)s, 
-                    wage = %(wage)s, 
+                    resume_url = %(resume_url)s, 
+                    cover_letter_url = %(cover_letter_url)s, 
+                    position_title = %(position_title)s, 
+                    notes = %(notes)s, 
+                    application_date = %(application_date)s, 
+                    position_level = %(position_level)s, 
+                    position_wage = %(position_wage)s, 
+                    company_name = %(company_name)s, 
+                    company_industry = %(company_industry)s, 
+                    company_website = %(company_website)s, 
+                    posting_url = %(posting_url)s, 
+                    job_location = %(job_location)s, 
+                    posting_source = %(posting_source)s, 
                     job_start = %(job_start)s, 
-                    company = %(company)s, 
-                    industry = %(industry)s, 
-                    website = %(website)s, 
-                    phone = %(phone)s
+                    priority = %(priority)s
                     {updated_at}
-                WHERE aid = %(aid)s AND uid = %(uid)s
+                WHERE aid = %(aid)s
                 RETURNING aid
             """
         else:
-            Validate.required_fields(self, ["uid", "status", "title", "company"])
+            Validate.required_fields(
+                self, ["uid", "status", "position_title", "company_name"]
+            )
+
             sql = f"""
                 INSERT INTO applications 
-                    (uid, status, resume, cover_letter, title, description, date, field, 
-                        position, wage, job_start, company, industry, website, phone)
+                    (uid, status, resume_url, cover_letter_url, position_title, notes, application_date, 
+                    position_level, position_wage, company_name, company_industry, company_website, 
+                    posting_url, job_location, posting_source, job_start, priority)
                 VALUES 
-                    (%(uid)s, %(status)s, %(resume)s, %(cover_letter)s, %(title)s,
-                        %(description)s, %(date)s, %(field)s, %(position)s, %(wage)s,
-                        %(job_start)s, %(company)s, %(industry)s, %(website)s, %(phone)s)
+                    (%(uid)s, %(status)s, %(resume_url)s, %(cover_letter_url)s, %(position_title)s, 
+                    %(notes)s, %(application_date)s, %(position_level)s, %(position_wage)s, 
+                    %(company_name)s, %(company_industry)s, %(company_website)s, %(posting_url)s, 
+                    %(job_location)s, %(posting_source)s, %(job_start)s, %(priority)s)
                 RETURNING aid
             """
 
@@ -180,19 +170,21 @@ class Application:
             "aid": self.aid,
             "uid": self.uid,
             "status": self.status,
-            "resume": self.resume,
-            "cover_letter": self.cover_letter,
-            "title": self.title,
-            "description": self.description,
-            "date": self.date,
-            "field": self.field,
-            "position": self.position,
-            "wage": self.wage,
+            "resume_url": self.resume_url,
+            "cover_letter_url": self.cover_letter_url,
+            "position_title": self.position_title,
+            "notes": self.notes,
+            "application_date": self.application_date,
+            "position_level": self.position_level,
+            "position_wage": self.position_wage,
+            "company_name": self.company_name,
+            "company_industry": self.company_industry,
+            "company_website": self.company_website,
+            "posting_url": self.posting_url,
+            "job_location": self.job_location,
+            "posting_source": self.posting_source,
             "job_start": self.job_start,
-            "company": self.company,
-            "industry": self.industry,
-            "website": self.website,
-            "phone": self.phone,
+            "priority": self.priority,
         }
 
         self.db_conn.execute(sql, params)
