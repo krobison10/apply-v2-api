@@ -4,6 +4,8 @@ from ..config import *
 class Interview:
     required_fields = ["aid", "date", "modality"]
 
+    # TODO: define expand columns
+
     def __init__(self, uid=None, iid=None):
         self.uid: int = uid
         self.fields_populated: bool = False
@@ -30,7 +32,7 @@ class Interview:
         Validate.required_fields(self, ["uid", "iid"])
 
         sql = f"""
-        SELECT i.* {", a.*" if expand else ""}
+        SELECT i.* {", a.status, a.position_title, a.company_name, a.notes AS application_notes" if expand else ""}
         FROM interviews i 
         RIGHT JOIN applications a
             ON i.aid = a.aid
@@ -45,7 +47,7 @@ class Interview:
 
     def get_all(self, expand: bool = False):
         sql = f"""
-        SELECT i.* {", a.*" if expand else ""}
+        SELECT i.* {", a.status, a.position_title, a.company_name, a.notes AS application_notes" if expand else ""}
         FROM interviews i 
         LEFT JOIN applications a
             ON i.aid = a.aid

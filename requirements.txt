@@ -19,7 +19,9 @@ pathspec==0.11.2
 platformdirs==3.10.0
 psycopg2==2.9.7
 psycopg2-binary==2.9.7
+python-dateutil==2.8.2
 python-dotenv==1.0.0
 redis==5.0.0
+six==1.16.0
 tomli==2.0.1
 Werkzeug==2.3.7

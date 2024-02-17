@@ -32,7 +32,7 @@ def validate_interview_fields(interview, data):
         elif field in ["date"]:
             # TODO: validation function for date
             try:
-                setattr(interview, field, datetime.strptime(data[field], "%Y-%m-%d"))
+                setattr(interview, field, parser.parse(data[field]))
             except:
                 invalid_fields.append(field)
 
@@ -52,7 +52,7 @@ def create(data: dict) -> dict:
     interview = Interview()
     interview.uid = session.get("valid_uid")
 
-    if data["iid"]:
+    if "iid" in data:
         JSONError.status_code = 422
         JSONError.throw_json_error("IID cannot be supplied for new interview")
 
