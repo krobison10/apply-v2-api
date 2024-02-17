@@ -106,18 +106,33 @@ def applications_routes():
 # region: Interview routes
 
 
-@interview_routes.route("/interviews", methods=["GET"])
+@interview_routes.route("/interviews", methods=["GET", "POST", "PUT", "DELETE"])
 def get_applications_route():
-    expand = request.args.get("expand")
-    expand = True if expand == "true" else False
+    if request.method == "GET":
+        expand = request.args.get("expand")
+        expand = True if expand == "true" else False
 
-    iid = request.args.get("iid")
-    if iid:
-        res = interview_controller.get(iid, expand)
-    else:
-        res = interview_controller.get_all(expand)
+        iid = request.args.get("iid")
+        if iid:
+            res = interview_controller.get(iid, expand)
+        else:
+            res = interview_controller.get_all(expand)
 
-    return JSON.json_response(res)
+        return JSON.json_response(res)
+
+    if request.method == "POST":
+        result = interview_controller.create(request.json)
+        return JSON.json_response(result), 201
+
+    if request.method == "PUT":
+        iid = request.args.get("iid")
+        result = interview_controller.edit(iid, request.json)
+        return JSON.json_response(result), 200
+
+    if request.method == "DELETE":
+        iid = request.args.get("iid")
+        result = interview_controller.delete(iid)
+        return JSON.json_response(result), 200
 
 
 # endregion
