@@ -20,8 +20,8 @@ class Application:
 
         self.fields_populated: bool = False  # whether data has been loaded in from db
 
-        self.aid: int = None
-        self.uid: int = None
+        self.aid: int = aid
+        self.uid: int = uid
         self.status: int = None
         self.resume_url: str = None
         self.cover_letter_url: str = None
@@ -42,8 +42,6 @@ class Application:
         self.priority: int = None
 
         if aid and uid:
-            self.aid = aid
-            self.uid = uid
             self.load()
 
     def load(self):
