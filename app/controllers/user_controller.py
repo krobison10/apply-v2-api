@@ -18,3 +18,24 @@ def get_all() -> dict:
     users = User().get_all()
     response = {"count": len(users), "results": users}
     return response
+
+
+def update(data: dict) -> dict:
+    Access.check_API_access()
+    user = User(session["valid_uid"])
+    user.set(data)
+    user.save()
+    response = JSON.success(200)
+    return response
+
+
+def delete() -> dict:
+    Access.check_API_access()
+    user = User(session["valid_uid"])
+    user.delete()
+
+    session["logged_in"] = False
+    session["valid_uid"] = None
+    response = JSON.success(200)
+
+    return response

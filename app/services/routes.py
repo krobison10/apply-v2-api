@@ -57,9 +57,16 @@ def logout():
 # region: User routes
 
 
-@user_routes.route("/user", methods=["GET"])
+@user_routes.route("/user", methods=["GET", "PUT", "DELETE"])
 def get_user_route():
-    return JSON.json_response(user_controller.get()), 200
+    if request.method == "GET":
+        return JSON.json_response(user_controller.get()), 200
+    if request.method == "PUT":
+        result = user_controller.update(request.json)
+        return JSON.json_response(result), 200
+    if request.method == "DELETE":
+        result = user_controller.delete()
+        return JSON.json_response(result), 200
 
 
 @user_routes.route("/users", methods=["GET"])

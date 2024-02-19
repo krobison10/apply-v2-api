@@ -93,6 +93,53 @@ class User:
         self.uid = self.conn.last_id
         return self.conn.rows_affected
 
+    def save(self) -> int:
+        sql = """
+        UPDATE users
+        SET
+        firstname = %(firstname)s, 
+        lastname = %(lastname)s, 
+        phone = %(phone)s, 
+        username = %(username)s
+        WHERE uid = %(uid)s
+        """
+
+        Validate.required_fields(self, ["uid"])
+
+        params = {
+            "uid": self.uid,
+            "firstname": self.firstname,
+            "lastname": self.lastname,
+            "phone": self.phone,
+            "username": self.username,
+        }
+
+        self.conn.execute(sql, params)
+
+        if self.conn.rows_affected < 1:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("User update failed")
+
+        return self.conn.rows_affected
+
+    def delete(self) -> int:
+        sql = """
+        DELETE FROM users
+        WHERE uid = %(uid)s
+        """
+
+        Validate.required_fields(self, ["uid"])
+
+        params = {"uid": self.uid}
+
+        self.conn.execute(sql, params)
+
+        if self.conn.rows_affected < 1:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("User deletion failed")
+
+        return self.conn.rows_affected
+
     def get_all(self) -> dict:
         sql = "SELECT * FROM users"
         return self.conn.fetchAll(sql)
