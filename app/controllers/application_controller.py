@@ -32,7 +32,7 @@ def validate_application_fields(application, data):
         elif field in ["application_date", "job_start"]:
             # TODO: validation function for date
             try:
-                setattr(application, field, datetime.strptime(data[field], "%Y-%m-%d"))
+                setattr(application, field, parser.parse(data[field]))
             except:
                 invalid_fields.append(field)
 
