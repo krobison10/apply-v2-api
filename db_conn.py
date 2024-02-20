@@ -4,15 +4,10 @@ import psycopg2.pool
 
 load_dotenv(find_dotenv())
 
-
-print("Creating connection pool")
-
 username = "postgres"
 password = os.environ.get("DB_PASSWORD")
 host = "apply-dev-rds.cl6a4esq2qr9.us-west-2.rds.amazonaws.com"
 db_name = "apply"
-
-print("variables: ", username, password, host, db_name)
 
 try:
     connection_pool = psycopg2.pool.ThreadedConnectionPool(

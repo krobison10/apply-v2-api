@@ -8,6 +8,26 @@ class Application:
     # Fields that are required for this resources
     required_fields = ["status", "position_title", "company_name"]
 
+    valid_statuses = [
+        "not submitted",
+        "submitted",
+        "responded",
+        "rejected",
+        "interviewing",
+        "offer received",
+        "withdrawn",
+        "closed",
+    ]
+
+    valid_priorities_map = {
+        "none": 0,
+        "lowest": 1,
+        "low": 2,
+        "medium": 3,
+        "high": 4,
+        "highest": 5,
+    }
+
     def __init__(self, uid=None, aid=None):
         """
         Constructs all the necessary attributes for the application object.
@@ -22,6 +42,7 @@ class Application:
 
         self.aid: int = aid
         self.uid: int = uid
+
         self.status: int = None
         self.resume_url: str = None
         self.cover_letter_url: str = None
@@ -83,26 +104,6 @@ class Application:
         for field in data:
             if hasattr(self, field):
                 setattr(self, field, data[field])
-
-    def get_all(self):
-        """
-        Retrieves all application records for a user from the database.
-
-        Returns:
-            list[dict]: List of application data dictionaries.
-        """
-
-        Validate.required_fields(self, ["uid"])
-
-        sql = f"""
-            SELECT *
-            FROM applications a 
-            WHERE a.uid = %(uid)s
-        """
-
-        params = {"uid": self.uid}
-
-        return self.db_conn.fetchAll(sql, params)
 
     def save(self, keep_updated_at: bool = False):
         """
@@ -185,8 +186,8 @@ class Application:
             "priority": self.priority,
         }
 
-        self.db_conn.execute(sql, params)
-        return self.db_conn.last_id
+        response = self.db_conn.execute(sql, params)
+        return response["aid"]
 
     def delete(self) -> int:
         """

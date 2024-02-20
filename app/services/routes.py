@@ -88,7 +88,25 @@ def applications_routes():
         if aid:
             res = application_controller.get(aid)
         else:
-            res = application_controller.get_all()
+            priority_filters = request.args.getlist("priority_filters")
+            status_filters = request.args.getlist("status_filters")
+            from_days_ago = request.args.get("from_days_ago")
+            to_days_ago = request.args.get("to_days_ago")
+            sort = request.args.get("sort")
+            order = request.args.get("order")
+            limit = request.args.get("limit")
+            offset = request.args.get("offset")
+
+            res = application_controller.get_all(
+                priority_filters,
+                status_filters,
+                from_days_ago,
+                to_days_ago,
+                sort,
+                order,
+                limit,
+                offset,
+            )
 
         return JSON.json_response(res), 200
 

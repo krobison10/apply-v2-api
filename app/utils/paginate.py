@@ -4,8 +4,8 @@ from urllib.parse import urlencode
 
 class PaginateUtil:
     @staticmethod
-    def paginate(limit: int, offset: int = 0, total: int = 0, count: int = 0):
-        base_url = request.base_url
+    def paginate(limit: int, offset: int = 0, total_results: int = 0, count: int = 0):
+        base_url = request.host_url + "api" + request.path
 
         query_params = request.args.to_dict()
 
@@ -29,7 +29,7 @@ class PaginateUtil:
         )
         next_url = (
             None
-            if (limit + offset) >= total
+            if (limit + offset) >= total_results
             else f"{base_url}?{urlencode(next_query_params)}"
         )
 
@@ -37,7 +37,7 @@ class PaginateUtil:
             "limit": limit,
             "offset": offset,
             "count": count,
-            "total_results": total,
+            "total_results": total_results,
             "links": {
                 "prev": prev_url,
                 "next": next_url,

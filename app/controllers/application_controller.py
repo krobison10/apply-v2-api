@@ -10,16 +10,53 @@ def get(aid: int) -> dict:
     if not app_data:
         JSONError.status_code = 404
         JSONError.throw_json_error("Application not found")
-    return app_data
+    # TODO: embed application in object
+    return JSON.success(200, app_data)
 
 
-def get_all() -> dict:
+def get_all(
+    priority_filters: list[str],
+    status_filters: list[int],
+    from_days_ago: int,
+    to_days_ago: int,
+    sort: str,
+    order: str,
+    limit: int,
+    offset: int,
+) -> dict:
     Access.check_API_access()
-    applications = Application()
+    limit = 100 if not limit else Validate.number(limit, "limit")
+    offset = 0 if not offset else Validate.number(offset, "offset")
+
+    from_days_ago = Validate.number(from_days_ago, "from_days_ago", required=False)
+    to_days_ago = Validate.number(to_days_ago, "to_days_ago", required=False)
+
+    limit = Validate.number(limit, "limit", required=False)
+    offset = Validate.number(offset, "offset", required=False)
+
+    applications = Applications()
     applications.uid = session.get("valid_uid")
-    application_results = applications.get_all()
-    response = {"count": len(application_results), "results": application_results}
-    return response
+
+    applications.set_priority_filters(priority_filters)
+    applications.set_status_filters(status_filters)
+    applications.set_date_filters(from_days_ago, to_days_ago)
+
+    applications.set_sort(sort)
+    applications.set_order(order)
+
+    applications.set_limit(limit)
+    applications.set_offset(offset)
+
+    results = applications.get()
+    count = applications.get(count=True)
+
+    metadata = PaginateUtil.paginate(limit, offset, count, len(results))
+
+    response = {
+        "metadata": metadata,
+        "results": results,
+    }
+    return JSON.success(200, response)
 
 
 def validate_application_fields(application, data):
@@ -27,10 +64,9 @@ def validate_application_fields(application, data):
 
     for field in data:
         if field in ["uid", "aid", "position_wage", "priority"]:
-            Validate.number(data[field], field)
+            Validate.number(data[field], field, required=False)
             setattr(application, field, int(data[field]))
         elif field in ["application_date", "job_start"]:
-            # TODO: validation function for date
             try:
                 setattr(application, field, parser.parse(data[field]))
             except:
@@ -55,6 +91,16 @@ def validate_application_fields(application, data):
         else:
             invalid_fields.append(field)
 
+        if field == "status" and data[field] not in Application.valid_statuses:
+            invalid_fields.append(field)
+
+        if (
+            field == "priority"
+            and data[field] not in Application.valid_priorities_map.keys()
+            and data[field] not in Application.valid_priorities_map.values()
+        ):
+            invalid_fields.append(field)
+
     if invalid_fields:
         error = "Invalid fields supplied: " + implode(invalid_fields, ", ")
         JSONError.status_code = 422
@@ -72,17 +118,35 @@ def create(data: dict) -> dict:
 
     aid = application.save()
 
+    if not aid:
+        JSONError.status_code = 500
+        JSONError.throw_json_error("Failed to create application")
+
     response = JSON.success(201, {"aid": aid})
     return response
 
 
 def edit(aid: int, data: dict) -> dict:
     Access.check_API_access()
-    application = Application(session.get("valid_uid"), aid)
+
+    application = Application()
+    application.uid = session.get("valid_uid")
+    application.aid = aid
+
+    app_data = application.get()
+    if not app_data:
+        JSONError.status_code = 404
+        JSONError.throw_json_error("Application not found")
+
+    application.set(app_data)
 
     validate_application_fields(application, data)
 
-    application.save()
+    id = application.save()
+
+    if not aid:
+        JSONError.status_code = 500
+        JSONError.throw_json_error("Failed to update application")
 
     response = JSON.success(200)
     return response
