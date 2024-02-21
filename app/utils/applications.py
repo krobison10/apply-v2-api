@@ -7,11 +7,13 @@ class Applications:
         "application_date",
         "company_name",
         "position_title",
-        "wage",
+        "position_wage",
         "priority",
         "created_at",
         "updated_at",
     ]
+
+    dates = ["application_date", "job_start", "created_at", "updated_at"]
 
     def __init__(self, uid=None, aid=None):
         self.db_conn: DBConnection = DBConnection()
@@ -55,7 +57,11 @@ class Applications:
 
     def set_status_filters(self, status_filters: list[str]):
         for filter in status_filters:
-            if filter.lower().replace("_", " ") not in Application.valid_statuses:
+
+            if (
+                filter
+                and filter.lower().replace("_", " ") not in Application.valid_statuses
+            ):
                 JSONError.status_code = 422
                 JSONError.throw_json_error(f"Invalid status filter: {filter}")
 
@@ -65,7 +71,7 @@ class Applications:
 
     def set_priority_filters(self, priority_filters: list[str]):
         for filter in priority_filters:
-            if filter.lower() not in Application.valid_priorities_map.keys():
+            if filter and filter.lower() not in Application.valid_priorities_map.keys():
                 JSONError.status_code = 422
                 JSONError.throw_json_error(f"Invalid priority filter: {filter}")
 
@@ -81,12 +87,15 @@ class Applications:
         self.to_days_ago = to_days_ago
 
     @staticmethod
-    def get_date_filters(from_days_ago: int, to_days_ago: int):
+    def get_date_filters(from_days_ago: int, to_days_ago: int, col: str = "created_at"):
         filter = ""
+        filter_col = col if col in Applications.dates else "created_at"
         if from_days_ago or from_days_ago == 0:
-            filter += f"AND a.application_date >= CURRENT_DATE - INTERVAL '{from_days_ago} DAY' \n"
+            filter += f"AND a.{filter_col} >= CURRENT_DATE - INTERVAL '{from_days_ago} DAY' \n"
         if to_days_ago:
-            filter += f"AND a.application_date <= CURRENT_DATE - INTERVAL '{to_days_ago} DAY' \n"
+            filter += (
+                f"AND a.{filter_col} <= CURRENT_DATE - INTERVAL '{to_days_ago} DAY' \n"
+            )
 
         return filter
 
@@ -112,7 +121,9 @@ class Applications:
 
         status_filter = self.get_status_filter(self.status_filters)
         priority_filter = self.get_priority_filter(self.priority_filters)
-        date_filter = self.get_date_filters(self.from_days_ago, self.to_days_ago)
+        date_filter = self.get_date_filters(
+            self.from_days_ago, self.to_days_ago, self.sort
+        )
 
         pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 

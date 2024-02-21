@@ -28,8 +28,12 @@ def get_all(
     limit = 100 if not limit else Validate.number(limit, "limit")
     offset = 0 if not offset else Validate.number(offset, "offset")
 
-    from_days_ago = Validate.number(from_days_ago, "from_days_ago", required=False)
-    to_days_ago = Validate.number(to_days_ago, "to_days_ago", required=False)
+    from_days_ago = Validate.number(
+        from_days_ago, "from_days_ago", required=False, positive=False
+    )
+    to_days_ago = Validate.number(
+        to_days_ago, "to_days_ago", required=False, positive=False
+    )
 
     limit = Validate.number(limit, "limit", required=False)
     offset = Validate.number(offset, "offset", required=False)

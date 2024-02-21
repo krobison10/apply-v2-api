@@ -5,7 +5,9 @@ from email_validator import validate_email, EmailNotValidError
 
 class Validate:
     @staticmethod
-    def number(number, name: str = "value", required: bool = True):
+    def number(
+        number, name: str = "value", required: bool = True, positive: bool = True
+    ):
         if required and not number:
             JSONError.throw_json_error(f"'{name}' is required")
         if number is None:
@@ -15,7 +17,7 @@ class Validate:
         except ValueError:
             JSONError.throw_json_error(f"The {name} must be numeric")
 
-        if number < 0:
+        if positive and number < 0:
             JSONError.throw_json_error(f"The {name} must be a positive number")
 
         return number
