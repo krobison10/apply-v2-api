@@ -4,6 +4,7 @@ from ..models.application import Application
 
 class Interviews:
     valid_sorts = [
+        "date",
         "application_date",
         "company_name",
         "position_title",
@@ -89,7 +90,7 @@ class Interviews:
     def get_date_filters(from_days_ago: int, to_days_ago: int, col: str = "created_at"):
         filter = ""
         filter_col = col if col in Applications.dates else "created_at"
-        if filter_col == "created_at" or filter_col == "updated_at":
+        if filter_col in ["created_at", "updated_at", "date"]:
             filter_col = "i." + filter_col
         else:
             filter_col = "a." + filter_col
