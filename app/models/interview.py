@@ -4,8 +4,6 @@ from ..config import *
 class Interview:
     required_fields = ["aid", "date", "modality"]
 
-    # TODO: define expand columns
-
     def __init__(self, uid=None, iid=None):
         self.uid: int = uid
         self.fields_populated: bool = False
@@ -27,12 +25,12 @@ class Interview:
         if uid and iid:
             self.load()
 
-    def get(self, expand: bool = False):
+    def get(self):
 
         Validate.required_fields(self, ["uid", "iid"])
 
         sql = f"""
-        SELECT i.* {", a.status, a.position_title, a.company_name, a.notes AS application_notes" if expand else ""}
+        SELECT i.*, a.status, a.position_title, a.company_name, a.notes AS application_notes
         FROM interviews i 
         RIGHT JOIN applications a
             ON i.aid = a.aid
@@ -44,19 +42,6 @@ class Interview:
         params = {"uid": self.uid, "iid": self.iid}
 
         return self.conn.fetch(sql, params)
-
-    def get_all(self, expand: bool = False):
-        sql = f"""
-        SELECT i.* {", a.status, a.position_title, a.company_name, a.notes AS application_notes" if expand else ""}
-        FROM interviews i 
-        LEFT JOIN applications a
-            ON i.aid = a.aid
-        WHERE a.uid = %(uid)s
-        """
-
-        params = {"uid": self.uid}
-
-        return self.conn.fetchAll(sql, params)
 
     def load(self):
         """Loads interview data from the database based on UID and AID and marks the object as populated."""

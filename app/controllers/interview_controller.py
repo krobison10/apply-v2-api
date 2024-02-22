@@ -1,25 +1,65 @@
 from ..config import *
 
 
-def get(iid: int, expand: bool = False) -> dict:
+def get(iid: int) -> dict:
     Access.check_API_access()
     interview = Interview()
     interview.uid = session.get("valid_uid")
     interview.iid = iid
-    interview_data = interview.get(expand)
+    interview_data = interview.get()
     if not interview_data:
         JSONError.status_code = 404
         JSONError.throw_json_error("Interview not found")
-    return interview_data
+    return JSON.success(200, interview_data)
 
 
-def get_all(expand: bool = False) -> dict:
+def get_all(
+    priority_filters: list[str],
+    status_filters: list[int],
+    from_days_ago: int,
+    to_days_ago: int,
+    sort: str,
+    order: str,
+    limit: int,
+    offset: int,
+) -> dict:
     Access.check_API_access()
-    interview = Interview()
-    interview.uid = session.get("valid_uid")
-    interview_results = interview.get_all(expand)
-    response = {"count": len(interview_results), "results": interview_results}
-    return response
+    limit = 100 if not limit else Validate.number(limit, "limit")
+    offset = 0 if not offset else Validate.number(offset, "offset")
+
+    from_days_ago = Validate.number(
+        from_days_ago, "from_days_ago", required=False, positive=False
+    )
+    to_days_ago = Validate.number(
+        to_days_ago, "to_days_ago", required=False, positive=False
+    )
+
+    limit = Validate.number(limit, "limit", required=False)
+    offset = Validate.number(offset, "offset", required=False)
+
+    interviews = Interviews()
+    interviews.uid = session.get("valid_uid")
+
+    interviews.set_priority_filters(priority_filters)
+    interviews.set_status_filters(status_filters)
+    interviews.set_date_filters(from_days_ago, to_days_ago)
+
+    interviews.set_sort(sort)
+    interviews.set_order(order)
+
+    interviews.set_limit(limit)
+    interviews.set_offset(offset)
+
+    results = interviews.get()
+    count = interviews.get(count=True)
+
+    metadata = PaginateUtil.paginate(limit, offset, count, len(results))
+
+    response = {
+        "metadata": metadata,
+        "results": results,
+    }
+    return JSON.success(200, response)
 
 
 def validate_interview_fields(interview, data):

@@ -2,7 +2,7 @@ from ..config import *
 from ..models.application import Application
 
 
-class Applications:
+class Interviews:
     valid_sorts = [
         "application_date",
         "company_name",
@@ -13,7 +13,7 @@ class Applications:
         "updated_at",
     ]
 
-    dates = ["application_date", "job_start", "created_at", "updated_at"]
+    dates = ["application_date", "created_at", "updated_at"]
 
     def __init__(self, uid=None, aid=None):
         self.db_conn: DBConnection = DBConnection()
@@ -24,9 +24,9 @@ class Applications:
         self.status_filters: list[str] = None
         self.priority_filters: list[int] = None
 
-        # longest amount of days ago to get applications from
+        # longest amount of days ago to get interviews from
         self.from_days_ago: int = None
-        # shortest amount of days ago to get applications from
+        # shortest amount of days ago to get interviews from
         self.to_days_ago: int = None
 
         self.sort: str = "created_at"
@@ -37,7 +37,7 @@ class Applications:
 
     def set_sort(self, sort: str):
         if sort:
-            if sort.lower() not in Applications.valid_sorts:
+            if sort.lower() not in Interviews.valid_sorts:
                 JSONError.status_code = 422
                 JSONError.throw_json_error(f"Invalid sort: {sort}")
             self.sort = sort.lower()
@@ -57,7 +57,6 @@ class Applications:
 
     def set_status_filters(self, status_filters: list[str]):
         for filter in status_filters:
-
             if (
                 filter
                 and filter.lower().replace("_", " ") not in Application.valid_statuses
@@ -90,11 +89,17 @@ class Applications:
     def get_date_filters(from_days_ago: int, to_days_ago: int, col: str = "created_at"):
         filter = ""
         filter_col = col if col in Applications.dates else "created_at"
+        if filter_col == "created_at" or filter_col == "updated_at":
+            filter_col = "i." + filter_col
+        else:
+            filter_col = "a." + filter_col
         if from_days_ago or from_days_ago == 0:
-            filter += f"AND a.{filter_col} >= CURRENT_DATE - INTERVAL '{from_days_ago} DAY' \n"
+            filter += (
+                f"AND {filter_col} >= CURRENT_DATE - INTERVAL '{from_days_ago} DAY' \n"
+            )
         if to_days_ago:
             filter += (
-                f"AND a.{filter_col} <= CURRENT_DATE - INTERVAL '{to_days_ago} DAY' \n"
+                f"AND {filter_col} <= CURRENT_DATE - INTERVAL '{to_days_ago} DAY' \n"
             )
 
         return filter
@@ -117,7 +122,11 @@ class Applications:
             list[dict]: List of application data dictionaries.
         """
 
-        select = "a.*" if not count else "COUNT(a.*) AS count"
+        select = (
+            f"i.*, a.status, a.position_title, a.company_name, a.notes AS application_notes"
+            if not count
+            else "COUNT(i.*) AS count"
+        )
 
         status_filter = self.get_status_filter(self.status_filters)
         priority_filter = self.get_priority_filter(self.priority_filters)
@@ -127,13 +136,15 @@ class Applications:
 
         pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
-        sort = f"ORDER BY {self.sort} {self.order}, a.aid DESC" if not count else ""
+        sort = f"ORDER BY {self.sort} {self.order}, i.iid DESC" if not count else ""
 
         Validate.required_fields(self, ["uid"])
 
         sql = f"""
             SELECT {select}
-            FROM applications a 
+            FROM interviews i 
+            JOIN applications a
+                ON i.aid = a.aid
             WHERE a.uid = %(uid)s
             {status_filter}
             {priority_filter}

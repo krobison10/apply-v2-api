@@ -134,16 +134,32 @@ def applications_routes():
 @interview_routes.route("/interviews", methods=["GET", "POST", "PUT", "DELETE"])
 def get_applications_route():
     if request.method == "GET":
-        expand = request.args.get("expand")
-        expand = True if expand == "true" else False
-
         iid = request.args.get("iid")
-        if iid:
-            res = interview_controller.get(iid, expand)
-        else:
-            res = interview_controller.get_all(expand)
 
-        return JSON.json_response(res)
+        if iid:
+            res = interview_controller.get(iid)
+        else:
+            priority_filters = request.args.getlist("priority_filters")
+            status_filters = request.args.getlist("status_filters")
+            from_days_ago = request.args.get("from_days_ago")
+            to_days_ago = request.args.get("to_days_ago")
+            sort = request.args.get("sort")
+            order = request.args.get("order")
+            limit = request.args.get("limit")
+            offset = request.args.get("offset")
+
+            res = interview_controller.get_all(
+                priority_filters,
+                status_filters,
+                from_days_ago,
+                to_days_ago,
+                sort,
+                order,
+                limit,
+                offset,
+            )
+
+        return JSON.json_response(res), 200
 
     if request.method == "POST":
         result = interview_controller.create(request.json)

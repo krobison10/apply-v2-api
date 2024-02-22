@@ -14,6 +14,7 @@ from .utils.validate import Validate
 from .utils.paginate import PaginateUtil
 
 from .utils.applications import Applications
+from .utils.interviews import Interviews
 
 from .models.user import User
 from .models.application import Application
