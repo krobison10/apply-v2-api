@@ -124,7 +124,7 @@ class Interviews:
         """
 
         select = (
-            f"i.*, a.status, a.position_title, a.company_name, a.notes AS application_notes"
+            f"i.*, a.status, a.position_title, a.company_name, a.company_website, a.notes AS application_notes"
             if not count
             else "COUNT(i.*) AS count"
         )
