@@ -19,6 +19,8 @@
         "/\\b[A-Z]{2,}\\b/g" // Ignore all uppercase words with 2 or more characters
     ],
     "words": [
+        "boto",
+        "botocore",
         "myenv",
         "psycopg",
         "urandom"

@@ -12,6 +12,7 @@ from .utils.json import JSON
 from .utils.helpers import *
 from .utils.validate import Validate
 from .utils.paginate import PaginateUtil
+from .utils.aws import AWS
 
 from .utils.applications import Applications
 from .utils.interviews import Interviews
