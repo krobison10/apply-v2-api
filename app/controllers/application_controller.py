@@ -114,6 +114,37 @@ def validate_application_fields(application, data):
         JSONError.throw_json_error(error)
 
 
+def handle_upload_docs(data: dict) -> dict:
+    if (
+        "resume" in data
+        and data["resume"]
+        and "resume_name" in data
+        and data["resume_name"]
+    ):
+        resume_url = upload_application_doc(data["resume"], data["resume_name"])
+        data["resume_url"] = resume_url
+
+    if (
+        "cover_letter" in data
+        and data["cover_letter"]
+        and "cover_letter_name" in data
+        and data["cover_letter_name"]
+    ):
+        cover_letter_url = upload_application_doc(
+            data["cover_letter"], data["cover_letter_name"]
+        )
+        data["cover_letter_url"] = cover_letter_url
+
+    if "resume" in data:
+        del data["resume"]
+    if "resume_name" in data:
+        del data["resume_name"]
+    if "cover_letter" in data:
+        del data["cover_letter"]
+    if "cover_letter_name" in data:
+        del data["cover_letter_name"]
+
+
 def upload_application_doc(file, name) -> str:
     extension = file.split(";")[0].split("/")[1]
     file = file.split(",")[1] + "==="
@@ -143,20 +174,7 @@ def create(data: dict) -> dict:
 
     Validate.required_fields(data, Application.required_fields, code=422)
 
-    if "resume" in data and data["resume"]:
-        resume_url = upload_application_doc(data["resume"], data["resume_name"])
-        data["resume_url"] = resume_url
-
-    if "cover_letter" in data and data["cover_letter"]:
-        cover_letter_url = upload_application_doc(
-            data["cover_letter"], data["cover_letter_name"]
-        )
-        data["cover_letter_url"] = cover_letter_url
-
-    del data["resume"]
-    del data["resume_name"]
-    del data["cover_letter"]
-    del data["cover_letter_name"]
+    handle_upload_docs(data)
 
     validate_application_fields(application, data)
 
@@ -184,20 +202,7 @@ def edit(aid: int, data: dict) -> dict:
 
     application.set(app_data)
 
-    if "resume" in data and data["resume"]:
-        resume_url = upload_application_doc(data["resume"], data["resume_name"])
-        data["resume_url"] = resume_url
-
-    if "cover_letter" in data and data["cover_letter"]:
-        cover_letter_url = upload_application_doc(
-            data["cover_letter"], data["cover_letter_name"]
-        )
-        data["cover_letter_url"] = cover_letter_url
-
-    del data["resume"]
-    del data["resume_name"]
-    del data["cover_letter"]
-    del data["cover_letter_name"]
+    handle_upload_docs(data)
 
     validate_application_fields(application, data)
 
