@@ -1,6 +1,7 @@
 from ..config import *
 import base64
-import uuid
+import secrets
+import string
 
 
 def get(aid: int) -> dict:
@@ -113,10 +114,15 @@ def validate_application_fields(application, data):
         JSONError.throw_json_error(error)
 
 
-def upload_application_doc(file) -> str:
+def upload_application_doc(file, name) -> str:
     extension = file.split(";")[0].split("/")[1]
     file = file.split(",")[1] + "==="
-    name = str(uuid.uuid4()) + "." + extension
+
+    random_string = "".join(
+        secrets.choice(string.ascii_letters + string.digits) for _ in range(8)
+    )
+    name = name + "-" + random_string + "." + extension
+
     file_bytes = base64.b64decode(file)
     object_url = AWS.s3_upload_file("applyapp.applications.documents", name, file_bytes)
     return object_url
@@ -138,15 +144,19 @@ def create(data: dict) -> dict:
     Validate.required_fields(data, Application.required_fields, code=422)
 
     if "resume" in data and data["resume"]:
-        resume_url = upload_application_doc(data["resume"])
+        resume_url = upload_application_doc(data["resume"], data["resume_name"])
         data["resume_url"] = resume_url
 
     if "cover_letter" in data and data["cover_letter"]:
-        cover_letter_url = upload_application_doc(data["cover_letter"])
+        cover_letter_url = upload_application_doc(
+            data["cover_letter"], data["cover_letter_name"]
+        )
         data["cover_letter_url"] = cover_letter_url
 
     del data["resume"]
+    del data["resume_name"]
     del data["cover_letter"]
+    del data["cover_letter_name"]
 
     validate_application_fields(application, data)
 
@@ -175,15 +185,19 @@ def edit(aid: int, data: dict) -> dict:
     application.set(app_data)
 
     if "resume" in data and data["resume"]:
-        resume_url = upload_application_doc(data["resume"])
+        resume_url = upload_application_doc(data["resume"], data["resume_name"])
         data["resume_url"] = resume_url
 
     if "cover_letter" in data and data["cover_letter"]:
-        cover_letter_url = upload_application_doc(data["cover_letter"])
+        cover_letter_url = upload_application_doc(
+            data["cover_letter"], data["cover_letter_name"]
+        )
         data["cover_letter_url"] = cover_letter_url
 
     del data["resume"]
+    del data["resume_name"]
     del data["cover_letter"]
+    del data["cover_letter_name"]
 
     validate_application_fields(application, data)
 
