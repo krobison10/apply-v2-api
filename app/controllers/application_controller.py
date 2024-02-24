@@ -122,6 +122,14 @@ def upload_application_doc(file) -> str:
     return object_url
 
 
+def delete_application_doc(url: str) -> bool:
+    name = url.replace(
+        "https://applyapp.applications.documents.s3-us-west-2.amazonaws.com/", ""
+    )
+    AWS.s3_delete_file("applyapp.applications.documents", name)
+    return True
+
+
 def create(data: dict) -> dict:
     Access.check_API_access()
     application = Application()
@@ -199,6 +207,13 @@ def delete(aid: int) -> bool:
     if not app_data:
         JSONError.status_code = 404
         JSONError.throw_json_error("Application not found")
+
+    # TODO: cron to delete docs for deleted accounts
+    if app_data["resume_url"]:
+        delete_application_doc(app_data["resume_url"])
+
+    if app_data["cover_letter_url"]:
+        delete_application_doc(app_data["cover_letter_url"])
 
     rows_affected = application.delete()
 
