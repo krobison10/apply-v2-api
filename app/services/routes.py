@@ -139,6 +139,9 @@ def get_applications_route():
         if iid:
             res = interview_controller.get(iid)
         else:
+            application_filter_aid = (
+                request.args.get("aid") if request.args.get("aid") else None
+            )
             priority_filters = request.args.getlist("priority_filters")
             status_filters = request.args.getlist("status_filters")
             from_days_ago = request.args.get("from_days_ago")
@@ -149,6 +152,7 @@ def get_applications_route():
             offset = request.args.get("offset")
 
             res = interview_controller.get_all(
+                application_filter_aid,
                 priority_filters,
                 status_filters,
                 from_days_ago,

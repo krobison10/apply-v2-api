@@ -14,6 +14,7 @@ def get(iid: int) -> dict:
 
 
 def get_all(
+    application_filter_aid: int,
     priority_filters: list[str],
     status_filters: list[int],
     from_days_ago: int,
@@ -39,6 +40,7 @@ def get_all(
 
     interviews = Interviews()
     interviews.uid = session.get("valid_uid")
+    interviews.aid = application_filter_aid
 
     interviews.set_priority_filters(priority_filters)
     interviews.set_status_filters(status_filters)

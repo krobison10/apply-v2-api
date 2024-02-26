@@ -22,6 +22,7 @@ class Interviews:
         self.uid: int = uid
 
         # for feed queries
+        self.aid: int = aid
         self.status_filters: list[str] = None
         self.priority_filters: list[int] = None
 
@@ -129,6 +130,7 @@ class Interviews:
             else "COUNT(i.*) AS count"
         )
 
+        application_filter = f"AND i.aid = %(aid)s" if self.aid else ""
         status_filter = self.get_status_filter(self.status_filters)
         priority_filter = self.get_priority_filter(self.priority_filters)
         date_filter = self.get_date_filters(
@@ -147,6 +149,7 @@ class Interviews:
             JOIN applications a
                 ON i.aid = a.aid
             WHERE a.uid = %(uid)s
+            {application_filter}
             {status_filter}
             {priority_filter}
             {date_filter}
@@ -156,7 +159,12 @@ class Interviews:
 
         print(sql)
 
-        params = {"uid": self.uid, "limit": self.limit, "offset": self.offset}
+        params = {
+            "uid": self.uid,
+            "aid": self.aid,
+            "limit": self.limit,
+            "offset": self.offset,
+        }
 
         if count:
             return int(self.db_conn.fetch(sql, params)["count"])
