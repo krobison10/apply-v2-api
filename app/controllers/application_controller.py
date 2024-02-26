@@ -152,7 +152,7 @@ def upload_application_doc(file, name) -> str:
     random_string = "".join(
         secrets.choice(string.ascii_letters + string.digits) for _ in range(8)
     )
-    name = name + "-" + random_string + "." + extension
+    name = name.split(".")[0] + "-" + random_string + "." + extension
 
     file_bytes = base64.b64decode(file)
     object_url = AWS.s3_upload_file("applyapp.applications.documents", name, file_bytes)
@@ -203,6 +203,7 @@ def edit(aid: int, data: dict) -> dict:
     application.set(app_data)
 
     handle_upload_docs(data)
+    # TODO: delete old s3 doc if new one uploaded
 
     validate_application_fields(application, data)
 

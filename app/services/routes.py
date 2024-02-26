@@ -35,7 +35,7 @@ def status():
 
 @auth_routes.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == "GET":  # debug
+    if request.method == "GET":  # TODO: not this
         data = {}
         data["email"] = "Abby01@uw.edu"
         data["password"] = "password"
