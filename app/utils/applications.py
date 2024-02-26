@@ -127,7 +127,11 @@ class Applications:
 
         pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
-        sort = f"ORDER BY {self.sort} {self.order}, a.aid DESC" if not count else ""
+        sort = (
+            f"ORDER BY a.pinned DESC, {self.sort} {self.order}, a.aid DESC"
+            if not count
+            else ""
+        )
 
         Validate.required_fields(self, ["uid"])
 

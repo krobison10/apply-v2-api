@@ -125,6 +125,14 @@ def applications_routes():
         return JSON.json_response(result), 200
 
 
+@application_routes.route("/applications/pin", methods=["PUT"])
+def pin_application():
+    if request.method == "PUT":
+        aid = request.args.get("aid")
+        result = application_controller.pin(aid, request.json)
+        return JSON.json_response(result), 200
+
+
 # endregion
 
 

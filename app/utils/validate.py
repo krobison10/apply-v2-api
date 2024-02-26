@@ -8,7 +8,7 @@ class Validate:
     def number(
         number, name: str = "value", required: bool = True, positive: bool = True
     ):
-        if required and not number:
+        if required and not number and number != 0:
             JSONError.throw_json_error(f"'{name}' is required")
         if number is None:
             return None

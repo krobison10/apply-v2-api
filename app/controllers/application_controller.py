@@ -217,6 +217,35 @@ def edit(aid: int, data: dict) -> dict:
     return response
 
 
+def pin(aid: int, data: dict) -> dict:
+    Access.check_API_access()
+    application = Application()
+    application.uid = session.get("valid_uid")
+    application.aid = aid
+
+    if "pinned" not in data:
+        JSONError.status_code = 422
+        JSONError.throw_json_error("'pinned' field is required")
+
+    pinned = Validate.number(data["pinned"], "pinned")
+
+    app_data = application.get()
+    if not app_data:
+        JSONError.status_code = 404
+        JSONError.throw_json_error("Application not found")
+
+    application.pinned = pinned
+
+    rows_affected = application.pin()
+
+    if not rows_affected:
+        JSONError.status_code = 500
+        JSONError.throw_json_error("Failed to pin application")
+
+    response = JSON.success(200)
+    return response
+
+
 def delete(aid: int) -> bool:
     Access.check_API_access()
     application = Application()

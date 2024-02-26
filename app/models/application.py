@@ -61,6 +61,7 @@ class Application:
         self.posting_source: str = None
         self.job_start: datetime = None
         self.priority: int = None
+        self.pinned: int = 0
 
         if aid and uid:
             self.load()
@@ -188,6 +189,28 @@ class Application:
 
         response = self.db_conn.execute(sql, params)
         return response["aid"]
+
+    def pin(self) -> int:
+        """
+        Pins the application record in the database.
+
+        Returns:
+            bool: True if the pin operation was successful, False otherwise.
+        """
+
+        Validate.required_fields(self, ["aid", "uid"])
+
+        sql = f"""
+            UPDATE applications
+            SET pinned = %(pinned)s
+            WHERE aid = %(aid)s 
+                AND uid = %(uid)s
+        """
+
+        params = {"aid": self.aid, "uid": self.uid, "pinned": self.pinned}
+
+        self.db_conn.execute(sql, params)
+        return self.db_conn.rows_affected
 
     def delete(self) -> int:
         """
