@@ -23,6 +23,7 @@ def get_all(
     status_filters: list[int],
     from_days_ago: int,
     to_days_ago: int,
+    show_archived: bool,
     sort: str,
     order: str,
     limit: int,
@@ -44,6 +45,8 @@ def get_all(
 
     applications = Applications()
     applications.uid = session.get("valid_uid")
+    applications.show_archived = show_archived
+
     applications.set_search_term(search_term)
 
     applications.set_priority_filters(priority_filters)
@@ -243,7 +246,36 @@ def pin(aid: int, data: dict) -> dict:
 
     if not rows_affected:
         JSONError.status_code = 500
-        JSONError.throw_json_error("Failed to pin application")
+        JSONError.throw_json_error("Failed to update application")
+
+    response = JSON.success(200)
+    return response
+
+
+def archive(aid: int, data: dict) -> dict:
+    Access.check_API_access()
+    application = Application()
+    application.uid = session.get("valid_uid")
+    application.aid = aid
+
+    if "archived" not in data:
+        JSONError.status_code = 422
+        JSONError.throw_json_error("'archived' field is required")
+
+    archived = Validate.number(data["archived"], "archived")
+
+    app_data = application.get()
+    if not app_data:
+        JSONError.status_code = 404
+        JSONError.throw_json_error("Application not found")
+
+    application.archived = archived
+
+    rows_affected = application.archive()
+
+    if not rows_affected:
+        JSONError.status_code = 500
+        JSONError.throw_json_error("Failed to update application")
 
     response = JSON.success(200)
     return response

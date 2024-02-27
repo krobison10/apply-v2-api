@@ -62,6 +62,7 @@ class Application:
         self.job_start: datetime = None
         self.priority: int = None
         self.pinned: int = 0
+        self.archived: int = 0
 
         if aid and uid:
             self.load()
@@ -195,7 +196,7 @@ class Application:
         Pins the application record in the database.
 
         Returns:
-            bool: True if the pin operation was successful, False otherwise.
+            bool: True if the operation was successful, False otherwise.
         """
 
         Validate.required_fields(self, ["aid", "uid"])
@@ -208,6 +209,28 @@ class Application:
         """
 
         params = {"aid": self.aid, "uid": self.uid, "pinned": self.pinned}
+
+        self.db_conn.execute(sql, params)
+        return self.db_conn.rows_affected
+
+    def archive(self) -> int:
+        """
+        Archives the application record in the database.
+
+        Returns:
+            bool: True if the operation was successful, False otherwise.
+        """
+
+        Validate.required_fields(self, ["aid", "uid"])
+
+        sql = f"""
+            UPDATE applications
+            SET archived = %(archived)s
+            WHERE aid = %(aid)s 
+                AND uid = %(uid)s
+        """
+
+        params = {"aid": self.aid, "uid": self.uid, "archived": self.archived}
 
         self.db_conn.execute(sql, params)
         return self.db_conn.rows_affected

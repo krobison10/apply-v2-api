@@ -48,6 +48,8 @@ class Applications:
         self.sort: str = Applications.default_sort
         self.order: str = Applications.default_order
 
+        self.show_archived: bool = False
+
         self.limit: int = Applications.default_limit
         self.offset: int = Applications.default_offset
 
@@ -181,6 +183,7 @@ class Applications:
         date_filter = self.get_date_filters(
             self.from_days_ago, self.to_days_ago, self.sort
         )
+        archived_filter = "AND a.archived = 0" if not self.show_archived else ""
 
         pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
@@ -203,6 +206,7 @@ class Applications:
             {status_filter}
             {priority_filter}
             {date_filter}
+            {archived_filter}
             {sort}
             {pagination}
         """

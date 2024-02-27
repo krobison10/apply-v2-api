@@ -93,6 +93,7 @@ def applications_routes():
             status_filters = request.args.getlist("status_filters")
             from_days_ago = request.args.get("from_days_ago")
             to_days_ago = request.args.get("to_days_ago")
+            show_archived = bool(request.args.get("show_archived"))
             sort = request.args.get("sort")
             order = request.args.get("order")
             limit = request.args.get("limit")
@@ -104,6 +105,7 @@ def applications_routes():
                 status_filters,
                 from_days_ago,
                 to_days_ago,
+                show_archived,
                 sort,
                 order,
                 limit,
@@ -126,12 +128,22 @@ def applications_routes():
         result = application_controller.delete(aid)
         return JSON.json_response(result), 200
 
+    # TODO: unsupported method
+
 
 @application_routes.route("/applications/pin", methods=["PUT"])
 def pin_application():
     if request.method == "PUT":
         aid = request.args.get("aid")
         result = application_controller.pin(aid, request.json)
+        return JSON.json_response(result), 200
+
+
+@application_routes.route("/applications/archive", methods=["PUT"])
+def archive_application():
+    if request.method == "PUT":
+        aid = request.args.get("aid")
+        result = application_controller.archive(aid, request.json)
         return JSON.json_response(result), 200
 
 
