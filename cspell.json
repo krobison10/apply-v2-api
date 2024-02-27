@@ -23,6 +23,8 @@
         "botocore",
         "myenv",
         "psycopg",
+        "tsquery",
+        "tsvector",
         "urandom"
     ]
 }

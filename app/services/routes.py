@@ -88,6 +88,7 @@ def applications_routes():
         if aid:
             res = application_controller.get(aid)
         else:
+            search_term = request.args.get("search", default=None)
             priority_filters = request.args.getlist("priority_filters")
             status_filters = request.args.getlist("status_filters")
             from_days_ago = request.args.get("from_days_ago")
@@ -98,6 +99,7 @@ def applications_routes():
             offset = request.args.get("offset")
 
             res = application_controller.get_all(
+                search_term,
                 priority_filters,
                 status_filters,
                 from_days_ago,

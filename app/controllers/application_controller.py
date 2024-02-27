@@ -18,6 +18,7 @@ def get(aid: int) -> dict:
 
 
 def get_all(
+    search_term: str,
     priority_filters: list[str],
     status_filters: list[int],
     from_days_ago: int,
@@ -43,6 +44,7 @@ def get_all(
 
     applications = Applications()
     applications.uid = session.get("valid_uid")
+    applications.set_search_term(search_term)
 
     applications.set_priority_filters(priority_filters)
     applications.set_status_filters(status_filters)
@@ -55,6 +57,7 @@ def get_all(
     applications.set_offset(offset)
 
     results = applications.get()
+
     count = applications.get(count=True)
 
     metadata = PaginateUtil.paginate(limit, offset, count, len(results))

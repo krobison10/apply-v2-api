@@ -4,6 +4,7 @@ from ..models.application import Application
 
 class Applications:
     valid_sorts = [
+        "relevance",
         "application_date",
         "company_name",
         "position_title",
@@ -13,14 +14,29 @@ class Applications:
         "updated_at",
     ]
 
+    default_sort = "created_at"
+    default_order = "DESC"
+    default_limit = 10
+    default_offset = 0
+
     dates = ["application_date", "job_start", "created_at", "updated_at"]
+
+    match_columns = [
+        "position_title",
+        "company_name",
+        "notes",
+        "position_level",
+        "company_industry",
+        "job_location",
+        "company_website",
+    ]
 
     def __init__(self, uid=None, aid=None):
         self.db_conn: DBConnection = DBConnection()
 
         self.uid: int = uid
+        self.search_term: str = None
 
-        # for feed queries
         self.status_filters: list[str] = None
         self.priority_filters: list[int] = None
 
@@ -29,11 +45,14 @@ class Applications:
         # shortest amount of days ago to get applications from
         self.to_days_ago: int = None
 
-        self.sort: str = "created_at"
-        self.order: str = "DESC"
+        self.sort: str = Applications.default_sort
+        self.order: str = Applications.default_order
 
-        self.limit: int = 10
-        self.offset: int = 0
+        self.limit: int = Applications.default_limit
+        self.offset: int = Applications.default_offset
+
+    def set_search_term(self, search_term: str):
+        self.search_term = search_term
 
     def set_sort(self, sort: str):
         if sort:
@@ -87,6 +106,28 @@ class Applications:
         self.to_days_ago = to_days_ago
 
     @staticmethod
+    def get_search_term_filter(search_term: str):
+        if not search_term:
+            return ""
+
+        individual_terms = search_term.split(" ")
+        all_matches = ""
+        for i in range(len(individual_terms)):
+            term = individual_terms[i]
+            term_match = list(
+                map(lambda x: f"a.{x} ILIKE '%%{term}%%'", Applications.match_columns)
+            )
+            term_match = " OR ".join(term_match)
+
+            all_matches += term_match
+            if i < len(individual_terms) - 1:
+                all_matches += " OR "
+
+        all_matches = f"AND ({all_matches}) \n"
+
+        return all_matches
+
+    @staticmethod
     def get_date_filters(from_days_ago: int, to_days_ago: int, col: str = "created_at"):
         filter = ""
         filter_col = col if col in Applications.dates else "created_at"
@@ -116,9 +157,25 @@ class Applications:
         Returns:
             list[dict]: List of application data dictionaries.
         """
+        # Validation
+        if self.sort == "relevance" and self.search_term is None:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("Relevance sort requires a search term")
 
-        select = "a.*" if not count else "COUNT(a.*) AS count"
+        # Select columns or count
+        base_select = "a.*"
+        term_split = ""
+        if self.sort == "relevance":
+            base_select += ", "
+            columns_text = " || ' ' ||  ".join(
+                list(map(lambda x: f"a.{x}", Applications.match_columns))
+            )
+            term_split = " & ".join(self.search_term.split(" "))
+            base_select += f"ts_rank(to_tsvector({columns_text}), to_tsquery(%(term_split)s)) AS rank"
+        select = base_select if not count else "COUNT(a.*) AS count"
 
+        # Standard filters
+        search_term_filter = self.get_search_term_filter(self.search_term)
         status_filter = self.get_status_filter(self.status_filters)
         priority_filter = self.get_priority_filter(self.priority_filters)
         date_filter = self.get_date_filters(
@@ -127,11 +184,14 @@ class Applications:
 
         pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
-        sort = (
-            f"ORDER BY a.pinned DESC, {self.sort} {self.order}, a.aid DESC"
-            if not count
-            else ""
-        )
+        order_clause = ""
+        if self.sort == "relevance":
+            order_clause = "ORDER BY rank DESC, a.aid DESC"
+        else:
+            order_clause = (
+                f"ORDER BY a.pinned DESC, a.{self.sort} {self.order}, a.aid DESC"
+            )
+        sort = order_clause if not count else ""
 
         Validate.required_fields(self, ["uid"])
 
@@ -139,6 +199,7 @@ class Applications:
             SELECT {select}
             FROM applications a 
             WHERE a.uid = %(uid)s
+            {search_term_filter}
             {status_filter}
             {priority_filter}
             {date_filter}
@@ -148,7 +209,12 @@ class Applications:
 
         print(sql)
 
-        params = {"uid": self.uid, "limit": self.limit, "offset": self.offset}
+        params = {
+            "uid": self.uid,
+            "term_split": term_split,
+            "limit": self.limit,
+            "offset": self.offset,
+        }
 
         if count:
             return int(self.db_conn.fetch(sql, params)["count"])
