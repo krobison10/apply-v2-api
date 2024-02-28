@@ -47,7 +47,7 @@ def get_all(
     applications.uid = session.get("valid_uid")
     applications.show_archived = show_archived
 
-    applications.set_search_term(search_term)
+    applications.set_search_term(search_term.strip() if search_term else search_term)
 
     applications.set_priority_filters(priority_filters)
     applications.set_status_filters(status_filters)

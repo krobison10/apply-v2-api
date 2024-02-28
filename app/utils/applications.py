@@ -28,7 +28,6 @@ class Applications:
         "position_level",
         "company_industry",
         "job_location",
-        "company_website",
     ]
 
     def __init__(self, uid=None, aid=None):
@@ -152,6 +151,40 @@ class Applications:
         list = ", ".join(priority_filters)
         return f"AND a.priority IN ({list}) \n" if len(priority_filters) > 0 else ""
 
+    @staticmethod
+    def get_rank_select() -> str:
+        # https://www.postgresql.org/docs/current/textsearch-controls.html
+        a_rank_text = " || ' ' ||  ".join(
+            list(map(lambda x: f"a.{x}", ["company_name", "position_title"]))
+        )
+        b_rank_text = " || ' ' ||  ".join(
+            list(map(lambda x: f"coalesce(a.{x}, '')", ["notes"]))
+        )
+        c_rank_text = " || ' ' ||  ".join(
+            list(
+                map(
+                    lambda x: f"coalesce(a.{x}, '')",
+                    ["job_location", "company_industry", "position_level"],
+                )
+            )
+        )
+        normalization = 2  # divides rank by document length
+        return f"""
+            ts_rank_cd(
+                (
+                    setweight(to_tsvector({a_rank_text}), 'A') ||
+                    setweight(to_tsvector({b_rank_text}), 'B' ) ||
+                    setweight(to_tsvector({c_rank_text}), 'C')
+                ), query, {normalization})
+        """
+
+    @staticmethod
+    def get_search_query(search_term) -> tuple[str, str]:
+        if not search_term:
+            return "", ""
+        term_split = " | ".join(map(lambda s: f"{s}:*", search_term.split(" ")))
+        return ", to_tsquery(%(term_split)s) query", term_split
+
     def get(self, count=False):
         """
         Retrieves application records for a user from the database.
@@ -160,32 +193,33 @@ class Applications:
             list[dict]: List of application data dictionaries.
         """
         # Validation
+        Validate.required_fields(self, ["uid"])
+
         if self.sort == "relevance" and self.search_term is None:
             JSONError.status_code = 500
             JSONError.throw_json_error("Relevance sort requires a search term")
 
         # Select columns or count
         base_select = "a.*"
-        term_split = ""
+
+        search_query_select, term_split = Applications.get_search_query(
+            self.search_term
+        )
+
         if self.sort == "relevance":
-            base_select += ", "
-            columns_text = " || ' ' ||  ".join(
-                list(map(lambda x: f"a.{x}", Applications.match_columns))
-            )
-            term_split = " & ".join(self.search_term.split(" "))
-            base_select += f"ts_rank(to_tsvector({columns_text}), to_tsquery(%(term_split)s)) AS rank"
+            base_select += f", {Applications.get_rank_select()} AS rank"
+
         select = base_select if not count else "COUNT(a.*) AS count"
 
         # Standard filters
-        search_term_filter = self.get_search_term_filter(self.search_term)
-        status_filter = self.get_status_filter(self.status_filters)
-        priority_filter = self.get_priority_filter(self.priority_filters)
-        date_filter = self.get_date_filters(
+        search_term_filter = Applications.get_search_term_filter(self.search_term)
+
+        status_filter = Applications.get_status_filter(self.status_filters)
+        priority_filter = Applications.get_priority_filter(self.priority_filters)
+        date_filter = Applications.get_date_filters(
             self.from_days_ago, self.to_days_ago, self.sort
         )
         archived_filter = "AND a.archived = 0" if not self.show_archived else ""
-
-        pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
         order_clause = ""
         if self.sort == "relevance":
@@ -194,13 +228,14 @@ class Applications:
             order_clause = (
                 f"ORDER BY a.pinned DESC, a.{self.sort} {self.order}, a.aid DESC"
             )
+
         sort = order_clause if not count else ""
 
-        Validate.required_fields(self, ["uid"])
+        pagination = f"LIMIT %(limit)s OFFSET %(offset)s" if not count else ""
 
         sql = f"""
             SELECT {select}
-            FROM applications a 
+            FROM applications a {search_query_select}
             WHERE a.uid = %(uid)s
             {search_term_filter}
             {status_filter}
@@ -210,8 +245,6 @@ class Applications:
             {sort}
             {pagination}
         """
-
-        print(sql)
 
         params = {
             "uid": self.uid,
