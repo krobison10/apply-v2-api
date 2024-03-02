@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from flask import Flask, jsonify
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_mail import Mail
 
 # blueprints
 from .services.routes import server_routes
@@ -41,6 +42,8 @@ error_codes = [
     500,
 ]
 
+mail = Mail()
+
 
 def create_app():
     app = Flask(__name__)
@@ -48,6 +51,16 @@ def create_app():
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     app.secret_key = os.getenv("SECRET_KEY")
+
+    # mail stuff
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 587
+    app.config["MAIL_USERNAME"] = "kylerrobison8@gmail.com"
+    app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
+    app.config["MAIL_USE_TLS"] = True
+    app.config["MAIL_USE_SSL"] = False
+
+    mail.init_app(app)
 
     @app.errorhandler(Exception)
     def handle_error(error):

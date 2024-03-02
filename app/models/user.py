@@ -16,6 +16,7 @@ class User:
         self.username: str = None
         self.created_at: datetime = None
         self.updated_at: datetime = None
+        self.email_verified: int = None
 
         if uid:
             self.uid = uid
@@ -32,6 +33,7 @@ class User:
             self.username = data["username"]
             self.created_at = data["created_at"]
             self.updated_at = data["updated_at"]
+            self.email_verified = data["email_verified"]
 
     def get_by_id(self) -> dict:
         sql = """
@@ -93,6 +95,49 @@ class User:
         self.uid = self.conn.last_id
         return self.conn.rows_affected
 
+    def create_activation(self, code: int) -> int:
+        sql = """
+        INSERT INTO activation (uid, code)
+        VALUES (%(uid)s, %(code)s)
+        ON CONFLICT (uid) DO UPDATE
+        SET uid = %(uid)s, code = %(code)s
+        """
+        params = {"uid": self.uid, "code": code}
+        self.conn.execute(sql, params)
+
+        if self.conn.rows_affected < 1:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("Activation creation failed")
+
+        return self.conn.rows_affected
+
+    def get_activation(self) -> dict:
+        sql = """
+        SELECT *
+        FROM activation
+        WHERE uid = %(uid)s
+        """
+
+        params = {"uid": self.uid}
+
+        return self.conn.fetch(sql, params)
+
+    def delete_activation(self) -> int:
+        sql = """
+        DELETE FROM activation
+        WHERE uid = %(uid)s
+        """
+
+        params = {"uid": self.uid}
+
+        self.conn.execute(sql, params)
+
+        if self.conn.rows_affected < 1:
+            JSONError.status_code = 500
+            JSONError.throw_json_error("Activation deletion failed")
+
+        return self.conn.rows_affected
+
     def save(self) -> int:
         sql = """
         UPDATE users
@@ -100,7 +145,8 @@ class User:
         firstname = %(firstname)s, 
         lastname = %(lastname)s, 
         phone = %(phone)s, 
-        username = %(username)s
+        username = %(username)s,
+        email_verified = %(email_verified)s
         WHERE uid = %(uid)s
         """
 
@@ -112,6 +158,7 @@ class User:
             "lastname": self.lastname,
             "phone": self.phone,
             "username": self.username,
+            "email_verified": self.email_verified,
         }
 
         self.conn.execute(sql, params)

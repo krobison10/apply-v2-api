@@ -51,6 +51,19 @@ def logout():
     return JSON.json_response(auth_controller.logout())
 
 
+@auth_routes.route("/activate", methods=["POST"])
+def activate():
+    if request.method == "POST":
+        if "resend" in request.args:
+            result = auth_controller.create_activation()
+        else:
+            result = auth_controller.activate(request.json)
+        return JSON.json_response(result)
+    else:
+        JSONError.status_code = 405
+        JSONError.throw_json_error()
+
+
 # endregion
 
 
